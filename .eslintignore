@@ -1,0 +1,10 @@
+.git
+.husky
+.pnpm-store
+.turbo
+.vscode
+node_modules
+packages/eslint-config
+packages/jest-config
+packages/prettier-config
+packages/typescript-config
