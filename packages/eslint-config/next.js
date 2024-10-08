@@ -1,10 +1,11 @@
 const { resolve } = require("node:path");
+const path = require('path');
 
 const project = resolve(process.cwd(), "tsconfig.json");
 
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-  extends: ["./base.js", require.resolve("@vercel/style-guide/eslint/next")],
+  extends: [path.resolve(__dirname, './base.js'), require.resolve("@vercel/style-guide/eslint/next")],
   globals: {
     React: true,
     JSX: true,

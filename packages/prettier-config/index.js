@@ -1,7 +1,7 @@
 module.exports = {
   printWidth: 80, // 1行の最大文字数
   tabWidth: 2, // インデントのスペース数
-  useTabs: false, // インデントにタブを使わない
+  useTabs: true, // インデントにタブを使わない
   semi: true, // 行末にセミコロンを付ける
   singleQuote: true, // シングルクォートを使う
   trailingComma: "es5", // 配列やオブジェクトの最後にカンマを付ける（ES5対応の場所で）
