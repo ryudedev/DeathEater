@@ -6,8 +6,8 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 
 @Module({
-  imports: [LinksModule],
-  controllers: [AppController],
-  providers: [AppService],
+	imports: [LinksModule],
+	controllers: [AppController],
+	providers: [AppService],
 })
 export class AppModule {}
