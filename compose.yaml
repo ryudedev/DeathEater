@@ -1,0 +1,75 @@
+# nextjs x nestjs x postgresql x prisma x swagger
+services:
+  web:
+    build:
+      context: ./web
+      dockerfile: ../dockerfile/Dockerfile.web
+    ports:
+      - 3000:3000
+    volumes:
+      - ./web:/web
+    env_file:
+      - ./web/.env
+    networks:
+      - app-network
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: ./api
+      dockerfile: ../dockerfile/Dockerfile.api
+    ports:
+      - 3001:3001
+      - 5555:5555
+    volumes:
+      - ./api:/api
+    environment:
+      - NODE_ENV=development
+    networks:
+      - app-network
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    container_name: db
+    ports:
+      - 5432:5432
+    networks:
+      - app-network
+
+  swagger-editor:
+    image: swaggerapi/swagger-editor
+    container_name: "swagger-editor"
+    ports:
+      - "8001:8080"
+    depends_on:
+      - api
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: "swagger-ui"
+    ports:
+      - "8002:8080"
+    volumes:
+      - ./docs/openapi.yaml:/docs/openapi.yaml
+    environment:
+      SWAGGER_JSON: /openapi.yaml
+    depends_on:
+      - api
+
+  swagger-api:
+    image: stoplight/prism:3
+    container_name: "swagger-api"
+    ports:
+      - "8003:4010"
+    command: mock -h 0.0.0.0 /docs/openapi.yaml
+    volumes:
+      - ./docs/openapi.yaml:/docs/openapi.yaml
+    depends_on:
+      - api
+
+networks:
+  app-network:
+    driver: bridge

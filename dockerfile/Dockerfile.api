@@ -1,0 +1,22 @@
+# nestjs
+FROM node:22.9.0
+
+# Create app directory
+WORKDIR /api
+
+# Install app dependencies
+RUN npm i -g npm@latest && npm i -g pnpm@latest && npm i -g @nestjs/cli@latest && npm i -g prisma@latest
+COPY package*.json ./
+RUN pnpm install
+
+# change user
+USER node
+
+# Bundle app source
+COPY --chown=node:node . .
+
+# Expose port
+EXPOSE 3000
+
+# Start the app
+CMD ["pnpm", "start:dev"]

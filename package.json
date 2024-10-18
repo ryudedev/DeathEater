@@ -1,0 +1,59 @@
+{
+  "name": "deatheater",
+  "version": "1.0.0",
+  "description": "卒業制作",
+  "main": "index.js",
+  "bin": {
+    "create-pr": "./bin/create-pr.js"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "lint:precommit": "pnpm lint:front && pnpm lint:back",
+    "fmt:precommit": "pnpm fmt:front && pnpm fmt:back",
+    "fmt:front": "cd web && pnpm fmt",
+    "fmt:back": "cd api && pnpm format",
+    "lint:front": "cd web && pnpm lint",
+    "lint:back": "cd api && pnpm lint",
+    "build:front": "docker compose build",
+    "build:back": "docker compose build",
+    "start:front": "docker compose up -d",
+    "start:back": "docker compose up -d",
+    "start:all": "concurrently --names \"front,back\" --prefix-colors \"green.bold,blue.bold\" \"pnpm start:front\" \"pnpm start:back\"",
+    "start:build": "docker compose up -d --build",
+    "log:front": "docker compose logs -f web",
+    "log:back": "docker compose logs -f api",
+    "log:all": "concurrently --names \"front,back\" --prefix-colors \"green.bold,blue.bold\" \"pnpm log:front\" \"pnpm log:back\"",
+    "exec:front": "docker compose exec web bash",
+    "exec:back": "docker compose exec api bash",
+    "clean": "docker compose down"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "commitizen": "^4.3.0",
+    "commitlint-config-gitmoji": "^2.3.1",
+    "concurrently": "^9.0.1",
+    "cz-customizable": "^7.2.1",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "typescript-eslint": "^8.7.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": ".cz-config.cts"
+    }
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "express": "^4.21.0",
+    "gh": "^2.8.9",
+    "inquirer": "^11.0.2",
+    "typescript": "5.5",
+    "zx": "^8.1.8"
+  }
+}
