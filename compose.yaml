@@ -57,7 +57,7 @@ services:
     volumes:
       - ./docs/openapi.yaml:/docs/openapi.yaml
     environment:
-      SWAGGER_JSON: /openapi.yaml
+      SWAGGER_JSON: /docs/openapi.yaml
     depends_on:
       - api
 

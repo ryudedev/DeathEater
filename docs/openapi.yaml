@@ -1,81 +1,2009 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  version: 1.0.0
-  title: Sample API
-  description: >-
-    A sample API that uses a sample-site as an example to demonstrate features in
-    the OpenAPI 3.0 specification
+  title: Reminico with Swagger
+  description: |-
+    ReminicoのAPI定義書について説明します。API定義書は、Reminicoのシステム内で使用されるAPI（Application Programming Interface）の詳細をまとめたドキュメントです。これは、開発者がシステム間でどのようにデータをやり取りし、どの機能をどのように利用できるかを理解するための重要なリファレンスです。API定義書に含まれる典型的な要素を以下に示します。
+    1. リクエストとレスポンスのフォーマット
+    2. エラーハンドリングとその応答
+    3. 認証とセキュリティ
+  termsOfService: http://localhost:3001
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Swaggerの公式ページ
+  url: http://swagger.io
 servers:
-  - url: 'http://localhost:8003'
+  - url: https://localhost:3001
+tags:
+  - name: users
+    description: ユーザー情報に関するエンドポイント
+  - name: organizations
+    description: 組織情報に関するエンドポイント
+  - name: schools
+    description: 学校情報に関するエンドポイント
+  - name: capsules
+    description: タイムカプセル関連のエンドポイント
+  - name: classes
+    description: クラス情報に関するエンドポイント
+  - name: media
+    description: メディアファイルに関するエンドポイント
+  - name: stacks
+    description: スタック情報に関するエンドポイント
+  - name: payments
+    description: 支払い情報に関するエンドポイント
+  - name: histories
+    description: 履歴情報に関するエンドポイント
+
 paths:
   /users:
     get:
-      description: >
-        Returns all users
-      operationId: findUsers
-      parameters:
-        - name: tags
-          in: query
-          description: tags to filter by
-          required: false
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-        - name: limit
-          in: query
-          description: maximum number of results to return
-          required: false
-          schema:
-            type: integer
-            format: int32
+      tags:
+        - users
+      summary: ユーザー一覧を取得
+      description: 全ユーザーの情報を取得します。
+      operationId: findAllUsers
       responses:
         '200':
-          description: user response
+          description: ユーザー一覧の取得に成功
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/User'
-        default:
-          description: unexpected error
+        '401':
+          description: 認証に失敗した場合
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    post:
+      tags:
+        - users
+      summary: 新しいユーザーを作成
+      description: 新しいユーザーの情報を登録します。
+      operationId: createUser
+      requestBody:
+        description: 新しいユーザー情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '201':
+          description: ユーザーの作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: リクエストの内容が不正である場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /users/{id}:
+    get:
+      tags:
+        - users
+      summary: 特定のユーザーを取得
+      description: ユーザーIDに基づいて、特定のユーザーの情報を取得します。
+      operationId: findUserById
+      parameters:
+        - name: id
+          in: path
+          description: ユーザーID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: ユーザーの取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: 該当するユーザーが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    put:
+      tags:
+        - users
+      summary: ユーザーの情報を更新
+      description: ユーザーIDに基づいて、既存のユーザー情報を更新します。
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          description: ユーザーID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: 更新するユーザー情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: ユーザー情報の更新に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: リクエストの内容が不正である場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '404':
+          description: 該当するユーザーが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    delete:
+      tags:
+        - users
+      summary: ユーザーを削除
+      description: ユーザーIDに基づいて、特定のユーザーを削除します。
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          description: ユーザーID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: ユーザーの削除に成功
+        '404':
+          description: 該当するユーザーが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /organizations:
+    get:
+      tags:
+        - organizations
+      summary: 組織一覧を取得
+      description: 全ての組織の情報を取得します。
+      operationId: findAllOrganizations
+      responses:
+        '200':
+          description: 組織一覧の取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+        '401':
+          description: 認証に失敗した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    post:
+      tags:
+        - organizations
+      summary: 新しい組織を作成
+      description: 新しい組織を登録します。
+      operationId: createOrganization
+      requestBody:
+        description: 新しい組織情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationCreate'
+      responses:
+        '201':
+          description: 組織の作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /organizations/{id}:
+    get:
+      tags:
+        - organizations
+      summary: 特定の組織を取得
+      description: 組織IDに基づいて、特定の組織の情報を取得します。
+      operationId: findOrganizationById
+      parameters:
+        - name: id
+          in: path
+          description: 組織ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 組織の取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '404':
+          description: 組織が見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    put:
+      tags:
+        - organizations
+      summary: 組織情報を更新
+      description: 組織IDに基づいて、既存の組織情報を更新します。
+      operationId: updateOrganization
+      parameters:
+        - name: id
+          in: path
+          description: 組織ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: 更新する組織情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationUpdate'
+      responses:
+        '200':
+          description: 組織の更新に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '404':
+          description: 組織が見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    delete:
+      tags:
+        - organizations
+      summary: 組織を削除
+      description: 組織IDに基づいて、特定の組織を削除します。
+      operationId: deleteOrganization
+      parameters:
+        - name: id
+          in: path
+          description: 組織ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 組織の削除に成功
+        '404':
+          description: 組織が見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /schools:
+    get:
+      tags:
+        - schools
+      summary: 学校一覧を取得
+      description: 全ての学校の情報を取得します。
+      operationId: findAllSchools
+      responses:
+        '200':
+          description: 学校一覧の取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/School'
+        '401':
+          description: 認証に失敗した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    post:
+      tags:
+        - schools
+      summary: 新しい学校を作成
+      description: 新しい学校を登録します。
+      operationId: createSchool
+      requestBody:
+        description: 新しい学校情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchoolCreate'
+      responses:
+        '201':
+          description: 学校の作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /schools/{id}:
+    get:
+      tags:
+        - schools
+      summary: 特定の学校を取得
+      description: 学校IDに基づいて、特定の学校の情報を取得します。
+      operationId: findSchoolById
+      parameters:
+        - name: id
+          in: path
+          description: 学校ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 学校の取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School'
+        '404':
+          description: 学校が見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    put:
+      tags:
+        - schools
+      summary: 学校情報を更新
+      description: 学校IDに基づいて、既存の学校情報を更新します。
+      operationId: updateSchool
+      parameters:
+        - name: id
+          in: path
+          description: 学校ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: 更新する学校情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchoolUpdate'
+      responses:
+        '200':
+          description: 学校の更新に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '404':
+          description: 学校が見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    delete:
+      tags:
+        - schools
+      summary: 学校を削除
+      description: 学校IDに基づいて、特定の学校を削除します。
+      operationId: deleteSchool
+      parameters:
+        - name: id
+          in: path
+          description: 学校ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 学校の削除に成功
+        '404':
+          description: 学校が見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /classes:
+    get:
+      tags:
+        - classes
+      summary: クラス一覧を取得
+      description: 全てのクラスの情報を取得します。
+      operationId: findAllClasses
+      responses:
+        '200':
+          description: クラス一覧の取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Class'
+        '401':
+          description: 認証に失敗した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    post:
+      tags:
+        - classes
+      summary: 新しいクラスを作成
+      description: 新しいクラスを登録します。
+      operationId: createClass
+      requestBody:
+        description: 新しいクラス情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassCreate'
+      responses:
+        '201':
+          description: クラスの作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /classes/{id}:
+    get:
+      tags:
+        - classes
+      summary: 特定のクラスを取得
+      description: クラスIDに基づいて、特定のクラスの情報を取得します。
+      operationId: findClassById
+      parameters:
+        - name: id
+          in: path
+          description: クラスID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: クラスの取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '404':
+          description: クラスが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    put:
+      tags:
+        - classes
+      summary: クラス情報を更新
+      description: クラスIDに基づいて、既存のクラス情報を更新します。
+      operationId: updateClass
+      parameters:
+        - name: id
+          in: path
+          description: クラスID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: 更新するクラス情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassUpdate'
+      responses:
+        '200':
+          description: クラスの更新に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '404':
+          description: クラスが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    delete:
+      tags:
+        - classes
+      summary: クラスを削除
+      description: クラスIDに基づいて、特定のクラスを削除します。
+      operationId: deleteClass
+      parameters:
+        - name: id
+          in: path
+          description: クラスID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: クラスの削除に成功
+        '404':
+          description: クラスが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /capsules:
+    get:
+      tags:
+        - capsules
+      summary: カプセル一覧を取得
+      description: 全てのカプセルの情報を取得します。
+      operationId: findAllCapsules
+      responses:
+        '200':
+          description: カプセル一覧の取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Capsule'
+        '401':
+          description: 認証に失敗した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    post:
+      tags:
+        - capsules
+      summary: 新しいカプセルを作成
+      description: 新しいカプセルを登録します。
+      operationId: createCapsule
+      requestBody:
+        description: 新しいカプセル情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapsuleCreate'
+      responses:
+        '201':
+          description: カプセルの作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Capsule'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /capsules/{id}:
+    get:
+      tags:
+        - capsules
+      summary: 特定のカプセルを取得
+      description: カプセルIDに基づいて、特定のカプセルの情報を取得します。
+      operationId: findCapsuleById
+      parameters:
+        - name: id
+          in: path
+          description: カプセルID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: カプセルの取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Capsule'
+        '404':
+          description: カプセルが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    put:
+      tags:
+        - capsules
+      summary: カプセル情報を更新
+      description: カプセルIDに基づいて、既存のカプセル情報を更新します。
+      operationId: updateCapsule
+      parameters:
+        - name: id
+          in: path
+          description: カプセルID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: 更新するカプセル情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapsuleUpdate'
+      responses:
+        '200':
+          description: カプセルの更新に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Capsule'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '404':
+          description: カプセルが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    delete:
+      tags:
+        - capsules
+      summary: カプセルを削除
+      description: カプセルIDに基づいて、特定のカプセルを削除します。
+      operationId: deleteCapsule
+      parameters:
+        - name: id
+          in: path
+          description: カプセルID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: カプセルの削除に成功
+        '404':
+          description: カプセルが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /media:
+    get:
+      tags:
+        - media
+      summary: メディア一覧を取得
+      description: 全てのメディアの情報を取得します。
+      operationId: findAllMedia
+      responses:
+        '200':
+          description: メディア一覧の取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Media'
+        '401':
+          description: 認証に失敗した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    post:
+      tags:
+        - media
+      summary: 新しいメディアを作成
+      description: 新しいメディアを登録します。
+      operationId: createMedia
+      requestBody:
+        description: 新しいメディア情報
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MediaCreate'
+      responses:
+        '201':
+          description: メディアの作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /media/{id}:
+    get:
+      tags:
+        - media
+      summary: 特定のメディアを取得
+      description: メディアIDに基づいて、特定のメディアの情報を取得します。
+      operationId: findMediaById
+      parameters:
+        - name: id
+          in: path
+          description: メディアID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: メディアの取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '404':
+          description: メディアが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    put:
+      tags:
+        - media
+      summary: メディア情報を更新
+      description: メディアIDに基づいて、既存のメディア情報を更新します。
+      operationId: updateMedia
+      parameters:
+        - name: id
+          in: path
+          description: メディアID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: 更新するメディア情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaUpdate'
+      responses:
+        '200':
+          description: メディアの更新に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '404':
+          description: メディアが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    delete:
+      tags:
+        - media
+      summary: メディアを削除
+      description: メディアIDに基づいて、特定のメディアを削除します。
+      operationId: deleteMedia
+      parameters:
+        - name: id
+          in: path
+          description: メディアID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: メディアの削除に成功
+        '404':
+          description: メディアが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /stacks:
+    get:
+      tags:
+        - stacks
+      summary: スタックにあるメディア一覧を取得
+      description: 承認待ちのスタック内メディアの情報を取得します。
+      operationId: findAllStacks
+      responses:
+        '200':
+          description: スタック内メディアの取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stack'
+        '401':
+          description: 認証に失敗した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    post:
+      tags:
+        - stacks
+      summary: 新しいメディアをスタックに追加
+      description: メディアをスタックに追加し、承認待ち状態にします。
+      operationId: createStack
+      requestBody:
+        description: スタックに追加するメディア情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StackCreate'
+      responses:
+        '201':
+          description: スタックへのメディア追加に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stack'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /stacks/{id}:
+    get:
+      tags:
+        - stacks
+      summary: 特定のスタックメディアを取得
+      description: スタックIDに基づいて、特定のメディアの情報を取得します。
+      operationId: findStackById
+      parameters:
+        - name: id
+          in: path
+          description: スタックID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: スタックメディアの取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stack'
+        '404':
+          description: メディアがスタックに見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    put:
+      tags:
+        - stacks
+      summary: スタックメディア情報を更新
+      description: スタックIDに基づいて、既存のスタックメディア情報を更新します。
+      operationId: updateStack
+      parameters:
+        - name: id
+          in: path
+          description: スタックID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: 更新するスタックメディア情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StackUpdate'
+      responses:
+        '200':
+          description: スタックメディアの更新に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stack'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '404':
+          description: メディアがスタックに見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    delete:
+      tags:
+        - stacks
+      summary: スタックメディアを削除
+      description: スタックIDに基づいて、特定のスタックメディアを削除します。
+      operationId: deleteStack
+      parameters:
+        - name: id
+          in: path
+          description: スタックID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: スタックメディアの削除に成功
+        '404':
+          description: メディアがスタックに見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /payments:
+    get:
+      tags:
+        - payments
+      summary: 支払い履歴を取得
+      description: 全ての支払い履歴を取得します。
+      operationId: findAllPayments
+      responses:
+        '200':
+          description: 支払い履歴の取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '401':
+          description: 認証に失敗した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    post:
+      tags:
+        - payments
+      summary: 新しい支払いを作成
+      description: 支払いを登録します。
+      operationId: createPayment
+      requestBody:
+        description: 支払い情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCreate'
+      responses:
+        '201':
+          description: 支払いの作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /payments/{id}:
+    get:
+      tags:
+        - payments
+      summary: 特定の支払いを取得
+      description: 支払いIDに基づいて、特定の支払いの情報を取得します。
+      operationId: findPaymentById
+      parameters:
+        - name: id
+          in: path
+          description: 支払いID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 支払いの取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: 支払いが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    put:
+      tags:
+        - payments
+      summary: 支払い情報を更新
+      description: 支払いIDに基づいて、既存の支払い情報を更新します。
+      operationId: updatePayment
+      parameters:
+        - name: id
+          in: path
+          description: 支払いID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: 更新する支払い情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentUpdate'
+      responses:
+        '200':
+          description: 支払いの更新に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '404':
+          description: 支払いが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    delete:
+      tags:
+        - payments
+      summary: 支払いを削除
+      description: 支払いIDに基づいて、特定の支払いを削除します。
+      operationId: deletePayment
+      parameters:
+        - name: id
+          in: path
+          description: 支払いID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 支払いの削除に成功
+        '404':
+          description: 支払いが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /histories:
+    get:
+      tags:
+        - histories
+      summary: 操作履歴を取得
+      description: 全ての操作履歴を取得します。
+      operationId: findAllHistories
+      responses:
+        '200':
+          description: 操作履歴の取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/History'
+        '401':
+          description: 認証に失敗した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /histories/{id}:
+    get:
+      tags:
+        - histories
+      summary: 特定の操作履歴を取得
+      description: 履歴IDに基づいて、特定の操作履歴の情報を取得します。
+      operationId: findHistoryById
+      parameters:
+        - name: id
+          in: path
+          description: 履歴ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 操作履歴の取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '404':
+          description: 履歴が見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+
 components:
   schemas:
     User:
-      type: "object"
-      required:
-        - "name"
+      type: object
       properties:
         id:
-          type: "integer"
-          format: "int64"
-          example: 100
+          type: integer
+          format: int64
+          example: 1
         name:
-          type: "string"
-          example: "Taro"
-        status:
-          type: "string"
-          description: "user status"
-          enum:
-            - "pending"
-            - "active"
-            - "inactive"
-    Error:
-      type: "object"
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: johndoe@example.com
+        password:
+          type: string
+          example: 'hashed_password'
+        role:
+          type: string
+          example: member
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: user
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: 'Example Organization'
+        address:
+          type: string
+          example: '123 Main St'
+        registration_number:
+          type: string
+          example: '012345678910'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: organization
+
+    School:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: 'Example School'
+        organization_id:
+          type: integer
+          format: int64
+          example: 1
+        school_registration_number:
+          type: string
+          example: 'A123456789101'
+        address:
+          type: string
+          example: '456 School Rd'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: school
+
+    Class:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: '5th Grade'
+        school_id:
+          type: integer
+          format: int64
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: class
+
+    Capsule:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        class_id:
+          type: integer
+          format: int64
+          example: 1
+        size:
+          type: string
+          example: '2GB'
+        release_date:
+          type: string
+          format: date-time
+          example: '2025-10-21T10:00:00Z'
+        upload_deadline:
+          type: string
+          format: date-time
+          example: '2025-12-21T10:00:00Z'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: capsule
+
+    Media:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        capsule_id:
+          type: integer
+          format: int64
+          example: 1
+        file_path:
+          type: string
+          example: 's3://bucket/media/file.mp4'
+        file_type:
+          type: string
+          example: 'video'
+        uploaded_by:
+          type: integer
+          format: int64
+          example: 1
+        approved_by:
+          type: integer
+          format: int64
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: media
+
+    Stack:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        capsule_id:
+          type: integer
+          format: int64
+          example: 1
+        file_path:
+          type: string
+          example: 's3://bucket/stack/file.png'
+        uploaded_by:
+          type: integer
+          format: int64
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: stack
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        organization_id:
+          type: integer
+          format: int64
+          example: 1
+        amount:
+          type: number
+          format: float
+          example: 3000
+        payment_date:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        duration:
+          type: string
+          example: '1 year'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: payment
+
+    History:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        capsule_id:
+          type: integer
+          format: int64
+          example: 1
+        event:
+          type: string
+          example: 'Media added'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        created_by:
+          type: integer
+          format: int64
+          example: 1
+      xml:
+        name: history
+
+    UserClasses:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        user_id:
+          type: integer
+          format: int64
+          example: 1
+        class_id:
+          type: integer
+          format: int64
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: user_classes
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: johndoe@example.com
+        password:
+          type: string
+          example: 'hashed_password'
+        role:
+          type: string
+          example: member
+      xml:
+        name: user_update
+
+    OrganizationCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Example Organization'
+        address:
+          type: string
+          example: '123 Main St'
+      xml:
+        name: organization_create
+
+    OrganizationUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Updated Organization Name'
+        address:
+          type: string
+          example: '123 Updated Address'
+      xml:
+        name: organization_update
+
+    SchoolCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Example School'
+        address:
+          type: string
+          example: '123 School St'
+      xml:
+        name: school_create
+
+    SchoolUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Updated School Name'
+        address:
+          type: string
+          example: '456 Updated St'
+      xml:
+        name: school_update
+
+    ClassCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Class 1A'
+        schoolId:
+          type: integer
+          example: 1
+      xml:
+        name: class_create
+
+    ClassUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Class 1A - Updated'
+        schoolId:
+          type: integer
+          example: 1
+      xml:
+        name: class_update
+
+    CapsuleCreate:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'My First Capsule'
+        description:
+          type: string
+          example: 'This is a time capsule for class memories.'
+        classId:
+          type: integer
+          example: 1
+      xml:
+        name: capsule_create
+
+    CapsuleUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'My Updated Capsule'
+        description:
+          type: string
+          example: 'This is an updated time capsule for class memories.'
+        classId:
+          type: integer
+          example: 1
+      xml:
+        name: capsule_update
+
+    MediaCreate:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'School Event'
+        file:
+          type: string
+          format: binary
+          description: アップロードするファイル（画像、動画、音声）
+        capsuleId:
+          type: integer
+          example: 1
+      xml:
+        name: media_create
+
+    MediaUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'Updated School Event'
+        capsuleId:
+          type: integer
+          example: 1
+      xml:
+        name: media_update
+
+    StackCreate:
+      type: object
+      properties:
+        mediaId:
+          type: integer
+          example: 1
+        capsuleId:
+          type: integer
+          example: 1
+      xml:
+        name: stack_create
+
+    StackUpdate:
+      type: object
+      properties:
+        mediaId:
+          type: integer
+          example: 1
+        capsuleId:
+          type: integer
+          example: 1
+      xml:
+        name: stack_update
+
+    PaymentCreate:
+      type: object
+      properties:
+        amount:
+          type: integer
+          example: 3000
+        currency:
+          type: string
+          example: 'JPY'
+        description:
+          type: string
+          example: 'Subscription Payment'
+        capsuleId:
+          type: integer
+          example: 1
+      xml:
+        name: payment_create
+
+    PaymentUpdate:
+      type: object
+      properties:
+        amount:
+          type: integer
+          example: 3000
+        currency:
+          type: string
+          example: 'JPY'
+        description:
+          type: string
+          example: 'Updated Subscription Payment'
+      xml:
+        name: payment_update
+
+    Response400:
+      type: object
       properties:
         code:
-          type: "integer"
-          format: "int32"
-        type:
-          type: "string"
+          type: integer
+          example: 400
         message:
-          type: "string"
-externalDocs:
-  description: "Find out more about Swagger"
-  url: "http://swagger.io"
+          type: string
+          example: The request contains invalid data.
+      xml:
+        name: response
+
+    Response401:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 401
+        message:
+          type: string
+          example: Authentication failed.
+      xml:
+        name: response
+
+    Response404:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: No matching data found.
+      xml:
+        name: response
+
+    Response500:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 500
+        message:
+          type: string
+          example: A server error occurred.
+      xml:
+        name: response
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
