@@ -1,6 +1,8 @@
 # nestjs
 FROM node:22.9.0
 
+RUN apt-get update && apt-get install -y postgresql-client
+
 # Create app directory
 WORKDIR /api
 
@@ -8,6 +10,8 @@ WORKDIR /api
 RUN npm i -g npm@latest && npm i -g pnpm@latest && npm i -g @nestjs/cli@latest && npm i -g prisma@latest
 COPY package*.json ./
 RUN pnpm install
+COPY setup.sh setup.sh
+RUN chmod +x setup.sh
 
 # change user
 USER node
@@ -19,4 +23,4 @@ COPY --chown=node:node . .
 EXPOSE 3000
 
 # Start the app
-CMD ["pnpm", "start:dev"]
+CMD ["sh", "setup.sh"]
