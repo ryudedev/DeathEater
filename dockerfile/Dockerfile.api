@@ -1,26 +1,36 @@
-# nestjs
+# NestJS
 FROM node:22.9.0
 
-RUN apt-get update && apt-get install -y postgresql-client
+# Install necessary dependencies for PostgreSQL client
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
 WORKDIR /api
 
-# Install app dependencies
-RUN npm i -g npm@latest && npm i -g pnpm@latest && npm i -g @nestjs/cli@latest && npm i -g prisma@latest
-COPY package*.json ./
-RUN pnpm install
-COPY setup.sh setup.sh
-RUN chmod +x setup.sh
+# Install global dependencies
+RUN npm i -g npm@latest pnpm@latest @nestjs/cli@latest prisma@latest
 
-# change user
+# Copy only the package.json and pnpm-lock.yaml to install dependencies first
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies without copying node_modules
+RUN pnpm install --frozen-lockfile
+
+# Copy application code except for ignored files like node_modules
+COPY . .
+
+# Set up permissions for setup script
+COPY setup.sh /api/setup.sh
+RUN chmod +x /api/setup.sh
+
+# Change ownership to node user for the application directory
+RUN chown -R node:node /api
+
+# Switch to non-root user
 USER node
-
-# Bundle app source
-COPY --chown=node:node . .
 
 # Expose port
 EXPOSE 3000
 
-# Start the app
-CMD ["sh", "setup.sh"]
+# Start the NestJS application
+CMD ["sh", "./setup.sh"]

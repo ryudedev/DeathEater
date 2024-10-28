@@ -1,0 +1,6 @@
+# Ignore node_modules to prevent copy errors
+node_modules
+npm-debug.log
+pnpm-debug.log
+dist
+.env

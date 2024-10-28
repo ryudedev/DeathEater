@@ -1,8 +1,8 @@
 'use client'
+import CreateUser from '@/components/user/create'
 import client from '@/lib/apolloClient'
 import { GET_USERS, USER_ADDED_SUBSCRIPTION } from '@/lib/operation'
 import { ApolloProvider, useQuery, useSubscription } from '@apollo/client'
-import CreateUser from './components/user/create'
 
 export default function Home() {
   return (
