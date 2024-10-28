@@ -1,0 +1,10 @@
+# .dockerignore at the root
+node_modules
+web/node_modules
+api/node_modules
+**/*.log
+.git
+pnpm-lock.yaml
+Dockerfile*
+docker-compose.yaml
+.env
