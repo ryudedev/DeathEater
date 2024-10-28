@@ -10,7 +10,13 @@ const config: Config = {
     extend: {
       colors: {
         background: 'var(--background)',
-        foreground: 'var(--foreground)',
+        // foreground: 'var(--foreground)',
+        input: '#DEDEDE',
+        foreground: '#1E9A9A',
+        ring: '#1E9A9A',
+      },
+      borderColor: {
+        input: '#DEDEDE',
       },
     },
   },
