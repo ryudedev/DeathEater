@@ -1,6 +1,6 @@
 type MessageProps = {
   text: string
-  isError?: boolean // エラー時はtrue
+  isError: boolean | null // エラー時はtrue
 }
 
 export default function Message({ text, isError = false }: MessageProps) {
