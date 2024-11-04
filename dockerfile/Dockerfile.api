@@ -4,7 +4,7 @@ FROM node:22.9.0 as deps
 WORKDIR /api
 RUN npm i -g npm@latest pnpm@latest
 COPY package.json ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Step 2: Build with Prisma Client generation
 FROM node:22.9.0 as builder
