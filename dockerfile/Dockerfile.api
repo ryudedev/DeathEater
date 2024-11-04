@@ -1,36 +1,38 @@
-# NestJS
+# Step 1: Dependency installation
+FROM node:22.9.0 as deps
+
+WORKDIR /api
+RUN npm i -g npm@latest pnpm@latest
+COPY package.json ./
+RUN pnpm install
+
+# Step 2: Build with Prisma Client generation
+FROM node:22.9.0 as builder
+
+WORKDIR /api
+RUN npm i -g pnpm@latest
+COPY . .
+COPY --from=deps /api/node_modules ./node_modules
+
+# Generate Prisma Client
+# Check if schema.prisma exists and then generate Prisma Client
+RUN if [ -f "prisma/schema.prisma" ]; then pnpm dlx prisma generate; else echo "schema.prisma not found"; fi
+
+# Build the application
+RUN pnpm build
+
+# Step 3: Production image
 FROM node:22.9.0
 
-# Install necessary dependencies for PostgreSQL client
-RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
-
-# Create app directory
+RUN npm i -g pnpm@latest
 WORKDIR /api
+ENV NODE_ENV production
 
-# Install global dependencies
-RUN npm i -g npm@latest pnpm@latest @nestjs/cli@latest prisma@latest
+COPY --from=builder /api/dist ./dist
+COPY --from=builder /api/package.json ./package.json
 
-# Copy only the package.json and pnpm-lock.yaml to install dependencies first
-COPY package.json pnpm-lock.yaml ./
+# Copy Prisma Client for production
+COPY --from=builder /api/node_modules/@prisma ./node_modules/@prisma
 
-# Install dependencies without copying node_modules
-RUN pnpm install --frozen-lockfile
-
-# Copy application code except for ignored files like node_modules
-COPY . .
-
-# Set up permissions for setup script
-COPY setup.sh /api/setup.sh
-RUN chmod +x /api/setup.sh
-
-# Change ownership to node user for the application directory
-RUN chown -R node:node /api
-
-# Switch to non-root user
-USER node
-
-# Expose port
-EXPOSE 3000
-
-# Start the NestJS application
-CMD ["sh", "./setup.sh"]
+EXPOSE 3001
+CMD [ "pnpm", "start:debug" ]

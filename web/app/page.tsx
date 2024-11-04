@@ -3,7 +3,7 @@
 import Input from '@/components/input'
 import Label from '@/components/label'
 import Message from '@/components/message'
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 export default function Home() {
   const [email, setEmail] = useState<string>('')
