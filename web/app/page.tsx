@@ -12,7 +12,7 @@ export default function Home() {
 }
 
 function Content() {
-  const textClickHandler = (e) => {
+  const textClickHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(e.target.value)
   }
 
