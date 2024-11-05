@@ -1,4 +1,4 @@
-# Pull Request Title
+# タイトル
 <!-- Pull Requestのタイトルを記入してください -->
 
 ## 概要
