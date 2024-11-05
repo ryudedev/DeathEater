@@ -9,11 +9,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        primary: 'var(--primary)',
         background: 'var(--background)',
-        // foreground: 'var(--foreground)',
-        input: '#DEDEDE',
-        foreground: '#1E9A9A',
-        ring: '#1E9A9A',
+        foreground: 'var(--foreground)',
+        error: 'var(--error)',
+        description: 'var(--description)',
+        image: 'var(--image)',
+        movie: 'var(--movie)',
+        voice: 'var(--voice)',
+        text: 'var(--text)',
+        border: 'var(--border)',
+        ring: 'var(--ring)',
       },
       borderColor: {
         input: '#DEDEDE',
