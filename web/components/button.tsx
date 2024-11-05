@@ -37,7 +37,9 @@ export default function Button({
     16: '16',
     15: '15',
     8: '8',
+    0: '0',
   }
+
   return (
     <button
       type={type}
