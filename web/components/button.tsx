@@ -1,4 +1,4 @@
-type PaddingEnum = 32 | 20 | 16 | 15 | 8
+type PaddingEnum = 32 | 20 | 16 | 15 | 8 | 0
 
 type ButtonProps = {
   children: React.ReactNode
