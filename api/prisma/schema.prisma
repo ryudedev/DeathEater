@@ -14,6 +14,103 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  //プライマリキー、cuid()によるユニークID
+  id         String   @id @default(cuid())
+  //メールアドレス
+  email      String   @unique
+  //ユーザー名
+  name       String
+  //ハッシュ化されたパスワード
+  password   String
+  //ロール(デフォルト：member)                   
+  role       String   @default("member")
+  //作成日時
+  created_at DateTime @default(now())
+  //更新日時 
+  updated_at DateTime @updatedAt
+}
+
+model Organization {
+  //自動インクリメントのプライマリキー
+  id                  Int      @id @default(autoincrement())
+  //組織名
+  name                String
+  //住所
+  address             String
+  //登録番号
+  registration_number String   @unique
+  //作成日時
+  created_at          DateTime @default(now())
+  //更新日時
+  updated_at          DateTime @updatedAt
+  //複数のSchoolとリレーション
+  schools             School[]
+}
+
+model School {
+  //自動インクリメントのプライマリキー
+  id                         Int      @id @default(autoincrement())
+  //学校名
+  name                       String
+  //Organizationとの関連ID
+  organization_id            Int
+  //学校登録番号
+  school_registration_number String   @unique
+  //学校住所
+  address                    String
+  //作成日時
+  created_at                 DateTime @default(now())
+  //更新日時
+  updated_at                 DateTime @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id])
+  //複数のClassとリレーション
+  classes      Class[]
+}
+
+model Class {
+  //自動インクリメントのプライマリキー
+  id         Int      @id @default(autoincrement())
+  //クラス名
+  name       String
+  //schoolとの関連ID
+  school_id  Int
+  //作成日時
+  created_at DateTime @default(now())
+  //更新日時
+  updated_at DateTime @updatedAt
+
+  school   School    @relation(fields: [school_id], references: [id])
+  //複数のCapsuleとリレーション
+  capsules Capsule[]
+}
+
+model Capsule {
+  //自動インクリメントのプライマリキー
+  id              Int      @id @default(autoincrement())
+  //Classとの関連ID
+  class_id        Int
+  //カプセルのサイズ
+  size            String
+  //カプセルを作成した日
+  release_date    DateTime
+  //アップロード期限
+  upload_deadline DateTime
+  //作成日時
+  created_at      DateTime @default(now())
+  //更新日時
+  updated_at      DateTime @updatedAt
+
+  class Class @relation(fields: [class_id], references: [id])
+}
+
+model Media {
+  //自動インクリメントのプライマリキー
+  id         Int    @id @default(autoincrement())
+  // Capsuleとの関連ID
+  capsule_id Int
+  //ファイルパス(例: "s3://bucket/media/file.mp4")
+  file_path  String
+  //ファイルタイプ(例: "video")
+  file_type  String
 }
