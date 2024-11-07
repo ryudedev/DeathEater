@@ -24,6 +24,9 @@ const config: Config = {
       borderColor: {
         input: '#DEDEDE',
       },
+      dropShadow: {
+        default: '0 7px 29px rgba(100, 100, 111, 0.2)',
+      },
     },
   },
   plugins: [],
