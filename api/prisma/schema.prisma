@@ -18,8 +18,10 @@ model User {
   id         String   @id @default(cuid())
   //メールアドレス
   email      String   @unique
-  //ユーザー名
-  name       String
+  //ユーザーの苗字
+  lastName   String
+  //ユーザーの名前
+  firstName  String
   //ハッシュ化されたパスワード
   password   String
   //ロール(デフォルト：member)                   
@@ -28,23 +30,27 @@ model User {
   created_at DateTime @default(now())
   //更新日時 
   updated_at DateTime @updatedAt
+
+  stacks      Stack[]
+  userClasses UserClasses[]
 }
 
 model Organization {
   //自動インクリメントのプライマリキー
-  id                  Int      @id @default(autoincrement())
+  id                  Int       @id @default(autoincrement())
   //組織名
   name                String
   //住所
   address             String
   //登録番号
-  registration_number String   @unique
+  registration_number String    @unique
   //作成日時
-  created_at          DateTime @default(now())
+  created_at          DateTime  @default(now())
   //更新日時
-  updated_at          DateTime @updatedAt
+  updated_at          DateTime  @updatedAt
   //複数のSchoolとリレーション
   schools             School[]
+  payments            Payment[]
 }
 
 model School {
@@ -80,9 +86,11 @@ model Class {
   //更新日時
   updated_at DateTime @updatedAt
 
-  school   School    @relation(fields: [school_id], references: [id])
+  school      School        @relation(fields: [school_id], references: [id])
   //複数のCapsuleとリレーション
-  capsules Capsule[]
+  capsules    Capsule[]
+  //複数のUserClassesとリレーション
+  userClasses UserClasses[]
 }
 
 model Capsule {
@@ -101,7 +109,11 @@ model Capsule {
   //更新日時
   updated_at      DateTime @updatedAt
 
-  class Class @relation(fields: [class_id], references: [id])
+  class     Class     @relation(fields: [class_id], references: [id])
+  // Capsuleが複数のStackを持つリレーション
+  stacks    Stack[]
+  // Capsuleが複数のHistoryを持つリレーション
+  histories History[]
 }
 
 model Media {
@@ -113,4 +125,80 @@ model Media {
   file_path  String
   //ファイルタイプ(例: "video")
   file_type  String
+}
+
+model Stack {
+  //自動インクリメントのプライマリキー
+  id          Int      @id @default(autoincrement())
+  // Capsuleとの関連ID
+  capsule_id  Int
+  //ファイルパス
+  file_path   String
+  // アップロードユーザーID
+  uploaded_by String
+  //作成日時
+  created_at  DateTime @default(now())
+  //更新日時
+  updated_at  DateTime @updatedAt
+
+  //リレーションの設定
+  //Capsuleとのリレーション
+  capsule Capsule @relation(fields: [capsule_id], references: [id])
+  //Userとのリレーション
+  user    User    @relation(fields: [uploaded_by], references: [id])
+}
+
+model Payment {
+  //自動インクリメントのプライマリキー
+  id              Int      @id @default(autoincrement())
+  // Organizationモデルのidを参照する外部キー
+  organization_id Int
+  //支払額を表すフィールド
+  amount          Float
+  //支払が行われた日付
+  payment_date    String
+  //支払の有効期限
+  duration        String
+  //作成日時
+  created_at      DateTime @default(now())
+  //更新日時
+  updated_at      DateTime @updatedAt
+
+  //リレーション設定
+  organization Organization @relation(fields: [organization_id], references: [id])
+}
+
+model History {
+  //自動インクリメントのプライマリキー
+  id         Int      @id @default(autoincrement())
+  //Capsuleモデルのidの参照キー
+  capsule_id Int
+  //イベントの内容を記録するフィールド（例: "Media added"）
+  event      String
+  //作成日時
+  created_at DateTime @default(now())
+  //更新日時
+  updated_at DateTime @updatedAt
+
+  //リレーション設定
+  capsule Capsule @relation(fields: [capsule_id], references: [id])
+}
+
+model UserClasses {
+  //自動インクリメントのプライマリキー
+  id         Int      @id @default(autoincrement())
+  // Userモデルのidを参照する外部キー
+  user_id    String
+  // Classモデルのidを参照する外部キー
+  class_id   Int
+  //作成日時
+  created_at DateTime @default(now())
+  //更新日時
+  updated_at DateTime @updatedAt
+
+  //リレーションの設定
+  // Userとのリレーション設定
+  user  User  @relation(fields: [user_id], references: [id])
+  //Classとのリレーション
+  class Class @relation(fields: [class_id], references: [id])
 }
