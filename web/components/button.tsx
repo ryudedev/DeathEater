@@ -1,53 +1,40 @@
-type PaddingEnum = 32 | 20 | 16 | 15 | 8 | 0
+import React from 'react'
 
-type ButtonProps = {
-  children: React.ReactNode
-  onClick?: () => void
-  type?: 'button' | 'submit' | 'reset'
-  disabled?: boolean
-  className?: string
-  itemsPosition?: 'center' | 'start' | 'end'
-  justifyPosition?: 'center' | 'start' | 'end'
-  paddingTopSize?: PaddingEnum
-  paddingBottomSize?: PaddingEnum
-  paddingLeftSize?: PaddingEnum
-  paddingRightSize?: PaddingEnum
-  paddingXSize?: PaddingEnum
-  paddingYSize?: PaddingEnum
+type PaddingEnum = 32 | 20 | 16 | 15 | 8 | 0
+type Position = 'center' | 'start' | 'end'
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  itemsPosition?: Position
+  justifyPosition?: Position
+  padding?: {
+    top?: PaddingEnum
+    bottom?: PaddingEnum
+    left?: PaddingEnum
+    right?: PaddingEnum
+    x?: PaddingEnum
+    y?: PaddingEnum
+  }
 }
 
-export default function Button({
+const Button: React.FC<ButtonProps> = ({
   children,
-  onClick,
-  type = 'button',
-  disabled = false,
-  className,
   itemsPosition = 'center',
   justifyPosition = 'center',
-  paddingTopSize = 0,
-  paddingBottomSize = 0,
-  paddingLeftSize = 0,
-  paddingRightSize = 0,
-  paddingXSize = 0,
-  paddingYSize = 0,
-}: ButtonProps) {
-  const padding = {
-    32: '32',
-    20: '20',
-    16: '16',
-    15: '15',
-    8: '8',
-    0: '0',
-  }
+  padding = {},
+  className = '',
+  ...props
+}) => {
+  const pad = (dir: keyof typeof padding) =>
+    `p${dir.charAt(0)}-${padding[dir] ?? 0}`
 
   return (
     <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={`flex items-${itemsPosition} justify-${justifyPosition} px-${padding[paddingXSize]} py-${padding[paddingYSize]} pt-${padding[paddingTopSize]} pr-${padding[paddingRightSize]} pb-${padding[paddingBottomSize]} pl-${padding[paddingLeftSize]} bg-primary border border-primary rounded-full ${className}`}
+      className={`flex items-${itemsPosition} justify-${justifyPosition} ${pad('x')} ${pad('y')} ${pad('top')} ${pad('right')} ${pad('bottom')} ${pad('left')} bg-primary border border-primary rounded-full ${className}`}
+      {...props}
     >
       {children}
     </button>
   )
 }
+
+export default Button

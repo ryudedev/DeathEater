@@ -103,8 +103,7 @@ export default function Home() {
           </a>
           <Button
             onClick={handleLogin}
-            paddingXSize={20}
-            paddingYSize={8}
+            padding={{ x: 20, y: 8 }}
             className="absolute w-[80px] h-[80px] flex items-start justify-start -right-6 -bottom-[27px] bg-[#441AFF] transition duration-300 font-semibold rounded-full"
             itemsPosition="center"
             justifyPosition="center"
