@@ -1,5 +1,6 @@
 // page.tsx
 'use client'
+import Button from '@/components/button'
 import Input from '@/components/input'
 import Label from '@/components/label'
 import Message from '@/components/message'
@@ -29,7 +30,13 @@ export default function Home() {
       setIsValidPassword(false)
     }
   }
-
+  const handleLogin = () => {
+    if (isValidEmail && isValidPassword) {
+      alert('ログイン成功！')
+    } else {
+      alert('メールアドレスまたはパスワードが無効です')
+    }
+  }
   return (
     <div>
       <div className="h-screen w-screen flex flex-col gap-9 p-4 items-center justify-center bg-white">
@@ -83,10 +90,10 @@ export default function Home() {
             <Message
               text={
                 isValidPassword === null
-                  ? 'メールアドレスを入力してください'
-                  : isValidEmail
+                  ? 'パスワードを入力してください'
+                  : isValidPassword
                     ? ''
-                    : '形式が間違っています'
+                    : '10文字以上で入力してください'
               }
               isError={isValidEmail === false}
             />
@@ -94,9 +101,22 @@ export default function Home() {
           <a href="#" className="text-[#1E9A9A] text-xs">
             ＞パスワードをお忘れの方はこちら
           </a>
-          <button className="absolute w-[80px] h-[80px] flex items-start justify-start -right-6 -bottom-[27px] bg-[#441AFF] text-white font-semibold pl-5 pt-5 pb-4 pr-4 rounded-full hover:bg-white hover:text-[#441AFF] border border-[#441AFF] transition duration-300">
-            ロ
-          </button>
+          <Button
+            onClick={handleLogin}
+            paddingXSize={20}
+            paddingYSize={8}
+            className="absolute w-[80px] h-[80px] flex items-start justify-start -right-6 -bottom-[27px] bg-[#441AFF] transition duration-300 font-semibold rounded-full"
+            itemsPosition="center"
+            justifyPosition="center"
+          >
+            <Image
+              src="/Login.svg"
+              alt="Icon"
+              width={22}
+              height={20}
+              className="absolute bottom-10 right-9"
+            />
+          </Button>
         </div>
       </div>
     </div>
