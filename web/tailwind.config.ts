@@ -27,8 +27,19 @@ const config: Config = {
       dropShadow: {
         default: '0 7px 29px rgba(100, 100, 111, 0.2)',
       },
+      padding: {
+        '22': '87px',
+      },
+      gap: {
+        '7': '28px',
+      },
     },
   },
+  safelist: [
+    {
+      pattern: /[a-z]*/,
+    },
+  ],
   plugins: [],
 }
 export default config
