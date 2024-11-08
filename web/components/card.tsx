@@ -28,18 +28,12 @@ export default function Card({
   const bgColorClass = bgColor === 'blue' ? 'bg-blue-100' : 'bg-white'
 
   // 各パディングを個別に適用
-  const paddingClasses = [
-    padding.x !== undefined ? `px-${padding.x}` : '',
-    padding.y !== undefined ? `py-${padding.y}` : '',
-    padding.top !== undefined ? `pt-${padding.top}` : '',
-    padding.right !== undefined ? `pr-${padding.right}` : '',
-    padding.bottom !== undefined ? `pb-${padding.bottom}` : '',
-    padding.left !== undefined ? `pl-${padding.left}` : '',
-  ].join(' ')
+  const pad = (dir: keyof typeof padding) =>
+    `p${dir.charAt(0)}-${padding[dir] ?? 0}`
 
   return (
     <div
-      className={`w-full flex ${flexDirection} ${gapClass} ${bgColorClass} rounded-2xl drop-shadow-default ${paddingClasses} overflow-hidden`}
+      className={`w-full flex ${flexDirection} ${gapClass} ${bgColorClass} rounded-2xl drop-shadow-default ${pad('x')} ${pad('y')} ${pad('top')} ${pad('right')} ${pad('bottom')} ${pad('left')} overflow-hidden`}
       {...props}
     >
       {children}

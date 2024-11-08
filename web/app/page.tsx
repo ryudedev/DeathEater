@@ -119,13 +119,7 @@ export default function Home() {
             itemsPosition="center"
             justifyPosition="center"
           >
-            <Image
-              src="/Login.svg"
-              alt="Icon"
-              width={22}
-              height={20}
-              className="absolute bottom-10 right-9"
-            />
+            <Image src="/Login.svg" alt="Icon" width={22} height={20} />
           </Button>
         </Card>
       </div>
