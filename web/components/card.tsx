@@ -25,7 +25,7 @@ export default function Card({
 }: CardProps) {
   const flexDirection = flexDir === 'row' ? 'flex-row' : 'flex-col'
   const gapClass = gap ? `gap-${gap}` : 'gap-4'
-  const bgColorClass = bgColor === 'blue' ? 'bg-blue-100' : 'bg-white'
+  const bgColorClass = bgColor === 'blue' ? 'bg-[#441AFF]' : 'bg-white'
 
   // 各パディングを個別に適用
   const pad = (dir: keyof typeof padding) =>
