@@ -4,34 +4,51 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { AuthDto } from './dto/auth.dto';
 import { SignInResponse } from './dto/signin-response.dto';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 @Injectable()
 export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
 
+  //新規ユーザー登録メソッド
   async signUp(authDto: AuthDto): Promise<string> {
     const { email, password } = authDto;
 
     // パスワードのハッシュ化（コストを14に設定）
     const hashedPassword = await bcrypt.hash(password, 14);
-    console.log(hashedPassword);
+    //console.log(hashedPassword);
+
+    //データベースに新規ユーザー登録
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        lastName: '吉田', // 任意の初期値を設定
+        firstName: '沙保里',
+        role: 'member',
+      },
+    });
 
     // ユーザー作成後のペイロード設定
     const payload = {
-      id: 'user-id',
-      email,
-      name: 'user-name',
-      role: 'user-role',
+      id: newUser.id,
+      email: newUser.email,
+      name: `${newUser.firstName} ${newUser.lastName}`,
+      role: newUser.role,
     };
+    //JWTアクセストークンの生成
     const accessToken = await this.jwtService.sign(payload);
 
     // アクセストークンを返す
     return accessToken;
   }
 
+  //サインインメソッド
   async signIn(authDto: AuthDto): Promise<SignInResponse> {
     const { email, password } = authDto;
 
@@ -49,23 +66,22 @@ export class AuthService {
     const payload = {
       id: user.id,
       email: user.email,
-      name: user.name,
+      name: `${user.firstName} ${user.lastName}`,
       role: user.role,
     };
+
+    //JWTアクセストークンの生成
     const accessToken = await this.jwtService.sign(payload);
 
     // アクセストークンを返す
     return { accessToken };
   }
 
-  // ユーザーをメールアドレスで検索するメソッド（仮実装）
+  // ユーザーをメールアドレスで検索するメソッド
   private async findUserByEmail(email: string) {
-    return {
-      id: 'user-id',
-      email,
-      password: await bcrypt.hash('password123', 10),
-      name: 'user-name',
-      role: 'user-role',
-    };
+    // データベースからユーザーを取得
+    return await prisma.user.findUnique({
+      where: { email },
+    });
   }
 }

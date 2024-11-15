@@ -1,11 +1,10 @@
 import { gql } from '@apollo/client'
 
-// 全ユーザー取得クエリ
-export const GET_USERS = gql`
-  query GetUsers {
-    users {
-      id
-      email
+// サインインミューテーション
+export const SIGN_IN_MUTATION = gql`
+  mutation SignIn($email: String!, $password: String!) {
+    signIn(authDto: { email: $email, password: $password }) {
+      accessToken
     }
   }
 `

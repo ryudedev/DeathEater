@@ -1,13 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 set -e
-until pg_isready -h "db" -p 5432 -U "${POSTGRES_USER}"; do
-  echo "$(date) - waiting for db to start"
-  sleep 1
-done
+
+# migrationsディレクトリが存在する場合は削除
+# if [ -d "prisma/migrations" ]; then
+#   echo "Removing existing migrations directory..."
+#   rm -rf prisma/migrations
+# fi
 
 # Prismaのマイグレーションとクライアント生成
+pnpm dlx prisma migrate reset --force --skip-seed
 pnpm dlx prisma migrate dev --name init
-pnpm dlx prisma generate
+sleep 5
+# pnpm dlx prisma generate
+pnpm dlx prisma db seed
 
-# サーバーの起動
-pnpm start:prisma:dev
+pnpm dlx prisma studio

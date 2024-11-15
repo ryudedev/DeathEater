@@ -28,6 +28,8 @@ ENV NODE_ENV development
 RUN npm i -g pnpm@latest
 
 # ビルド済みのアプリケーションをコピー
+ENV NODE_ENV development
+# Copy the necessary build output
 COPY --from=builder /web/public ./public
 COPY --from=builder /web/.next ./.next
 COPY --from=builder /web/package.json ./package.json
