@@ -3,8 +3,8 @@ FROM node:22.9.0 as deps
 
 WORKDIR /api
 RUN npm i -g npm@latest pnpm@latest
-COPY package.json ./
-RUN pnpm install
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Step 2: Build with Prisma Client generation
 FROM node:22.9.0 as builder
@@ -15,29 +15,26 @@ COPY . .
 COPY --from=deps /api/node_modules ./node_modules
 
 # Generate Prisma Client
-# Check if schema.prisma exists and then generate Prisma Client
 RUN if [ -f "prisma/schema.prisma" ]; then pnpm dlx prisma generate; else echo "schema.prisma not found"; fi
 
-# Build the application
-RUN pnpm build
+# Build the application and list contents of the dist folder
+RUN pnpm build && ls -al /api/dist
 
 # Step 3: Production image
 FROM node:22.9.0
 
-RUN npm i -g pnpm@latest
 WORKDIR /api
 ENV NODE_ENV production
-ENV POSTGRES_USER deatheater
 
+# Make sure pnpm is installed in production image
+RUN npm i -g pnpm@latest 
+
+# Copy production files
 COPY --from=builder /api/dist ./dist
 COPY --from=builder /api/package.json ./package.json
-COPY --from=builder /api/setup.sh ./setup.sh
+COPY --from=builder /api/node_modules ./node_modules
+COPY --from=builder /api/prisma ./prisma
 
-# Copy Prisma Client for production
-COPY --from=builder /api/node_modules/@prisma ./node_modules/@prisma
-
-# Give execute permissions to setup.sh in the final stage
-RUN chmod +x ./setup.sh
-
+# Expose and run the app
 EXPOSE 3001
-CMD [ "pnpm", "start:debug" ]
+CMD ["pnpm", "start:prod"]

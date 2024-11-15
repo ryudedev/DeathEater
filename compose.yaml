@@ -44,6 +44,7 @@ services:
   swagger-editor:
     image: swaggerapi/swagger-editor
     container_name: "swagger-editor"
+    platform: linux/amd64  # 追加
     ports:
       - "8001:8080"
     depends_on:
@@ -52,6 +53,7 @@ services:
   swagger-ui:
     image: swaggerapi/swagger-ui
     container_name: "swagger-ui"
+    platform: linux/amd64  # 追加
     ports:
       - "8002:8080"
     volumes:
@@ -64,6 +66,7 @@ services:
   swagger-api:
     image: stoplight/prism:3
     container_name: "swagger-api"
+    platform: linux/amd64  # 追加
     ports:
       - "8003:4010"
     command: mock -h 0.0.0.0 /docs/openapi.yaml

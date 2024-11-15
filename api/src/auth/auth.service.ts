@@ -7,7 +7,9 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthDto } from './dto/auth.dto';
 import { SignInResponse } from './dto/signin-response.dto';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
+import { UpdateUserDto } from './dto/update-user.dto';
+//import { Seed } from '../prisma/seed.ts';
 
 const prisma = new PrismaClient();
 
@@ -46,6 +48,22 @@ export class AuthService {
 
     // アクセストークンを返す
     return accessToken;
+  }
+
+  // IDでユーザーを検索するメソッド
+  async findUserById(id: string): Promise<User> {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  // ユーザー情報を更新するメソッド
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { ...updateUserDto },
+    });
+    return updatedUser;
   }
 
   //サインインメソッド
