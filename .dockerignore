@@ -1,10 +1,7 @@
 # .dockerignore at the root
-node_modules
-web/node_modules
-api/node_modules
+**/node_modules/
+**/.git
 **/*.log
-.git
-pnpm-lock.yaml
 Dockerfile*
 docker-compose.yaml
 .env

@@ -7,7 +7,7 @@
     "create-pr": "./bin/create-pr.js"
   },
   "scripts": {
-    "prepare": "husky",
+    "prepare": "husky install",
     "lint:precommit": "pnpm lint:front && pnpm lint:back",
     "fmt:precommit": "pnpm fmt:front && pnpm fmt:back",
     "fmt:front": "cd web && pnpm fmt",
@@ -28,7 +28,7 @@
     "log:all": "concurrently --names \"front,back\" --prefix-colors \"green.bold,blue.bold\" \"pnpm log:front\" \"pnpm log:back\"",
     "exec:front": "docker compose exec web bash",
     "exec:back": "docker compose exec api bash",
-    "clean": "docker compose down"
+    "clean": "docker compose down --volumes"
   },
   "author": "",
   "license": "ISC",
@@ -52,11 +52,11 @@
     }
   },
   "dependencies": {
-    "child_process": "^1.0.2",
     "express": "^4.21.0",
-    "gh": "^2.8.9",
-    "inquirer": "^11.0.2",
-    "typescript": "5.5",
+    "typescript": "^5.5",
     "zx": "^8.1.8"
+  },
+  "engines": {
+    "pnpm": ">=9.0.0"
   }
 }

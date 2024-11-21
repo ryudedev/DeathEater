@@ -26,6 +26,7 @@ services:
       - ./api:/api
     environment:
       - NODE_ENV=development
+      - POSTGRES_USER=deatheater
     networks:
       - app-network
     depends_on:

@@ -1,8 +1,10 @@
 // page.tsx
 'use client'
 import Button from '@/components/button'
+import Card from '@/components/card'
 import Input from '@/components/input'
 import Label from '@/components/label'
+import Menu from '@/components/menu'
 import Message from '@/components/message'
 import Image from 'next/image'
 import React, { useState } from 'react'
@@ -39,6 +41,7 @@ export default function Home() {
   }
   return (
     <div>
+      <Menu />
       <div className="h-screen w-screen flex flex-col gap-9 p-4 items-center justify-center bg-white">
         <Image
           src="/reminico.svg"
@@ -47,7 +50,17 @@ export default function Home() {
           height={60}
           className="mb-6"
         />
-        <div className="flex flex-col gap-[28px] w-full px-4 pt-4 pb-[87px] bg-white rounded-lg drop-shadow-default overflow-hidden">
+        <Card
+          gap={7}
+          padding={{
+            x: 4,
+            y: 4,
+            top: 4,
+            bottom: 22,
+            left: 4,
+            right: 4,
+          }}
+        >
           <div className="w-full flex flex-col gap-1.5">
             <Label htmlFor="email">
               メール
@@ -108,15 +121,9 @@ export default function Home() {
             itemsPosition="center"
             justifyPosition="center"
           >
-            <Image
-              src="/Login.svg"
-              alt="Icon"
-              width={22}
-              height={20}
-              className="absolute bottom-10 right-9"
-            />
+            <Image src="/Login.svg" alt="Icon" width={22} height={20} />
           </Button>
-        </div>
+        </Card>
       </div>
     </div>
   )
