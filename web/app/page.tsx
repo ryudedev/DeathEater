@@ -4,6 +4,7 @@ import Button from '@/components/button'
 import Card from '@/components/card'
 import Input from '@/components/input'
 import Label from '@/components/label'
+import Menu from '@/components/menu'
 import Message from '@/components/message'
 import Image from 'next/image'
 import React, { useState } from 'react'
@@ -40,6 +41,7 @@ export default function Home() {
   }
   return (
     <div>
+      <Menu />
       <div className="h-screen w-screen flex flex-col gap-9 p-4 items-center justify-center bg-white">
         <Image
           src="/reminico.svg"
