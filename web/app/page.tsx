@@ -48,17 +48,7 @@ export default function Home() {
           height={60}
           className="mb-6"
         />
-        <Card
-          gap={7}
-          padding={{
-            x: 4,
-            y: 4,
-            top: 4,
-            bottom: 22,
-            left: 4,
-            right: 4,
-          }}
-        >
+        <Card gap={7} className="p-1 pb-[22px]">
           <div className="w-full flex flex-col gap-1.5">
             <Label htmlFor="email">
               メール

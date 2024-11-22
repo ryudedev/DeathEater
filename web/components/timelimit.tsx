@@ -51,15 +51,7 @@ const TimeLimit: React.FC<TimeLimitProps> = ({ initialTime, openTime }) => {
 
   return (
     <div className="p-4 flex items-center justify-center">
-      <Card
-        bgColor="blue"
-        padding={{
-          top: 10,
-          bottom: 10,
-          left: 4,
-          right: 4,
-        }}
-      >
+      <Card bgColor="blue" className="pt-2.5 pb-2.5 pl-1 pr-1">
         <div className="absolute w-[140px] h-[40px] bg-white -top-1 -left-1.5 flex items-center justify-center rounded-br-2xl font-bold">
           <div className="text-xs text-[#441AFF]">
             {isUploadPhase ? 'アップロード終了まで' : '開封まで'}
