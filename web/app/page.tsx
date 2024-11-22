@@ -40,29 +40,8 @@ export default function Home() {
     }
   }
 
-  const logs = [
-    {
-      id: '1',
-      event: 'ログイン成功',
-      user_id: '1',
-      created_at: new Date(),
-    },
-    {
-      id: '2',
-      event: 'ログイン失敗',
-      user_id: '2',
-      created_at: new Date(),
-    },
-    {
-      id: '3',
-      event: 'ログイン成功',
-      user_id: '3',
-      created_at: new Date(),
-    },
-  ]
   return (
     <div>
-      <Logs logs={logs} filterUserId="2" />
       <div className="h-screen w-screen flex flex-col gap-9 p-4 items-center justify-center bg-white">
         <Image
           src="/reminico.svg"
