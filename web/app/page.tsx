@@ -4,7 +4,7 @@ import Button from '@/components/button'
 import Card from '@/components/card'
 import Input from '@/components/input'
 import Label from '@/components/label'
-import Menu from '@/components/menu'
+import Logs from '@/components/logs'
 import Message from '@/components/message'
 import Image from 'next/image'
 import React, { useState } from 'react'
@@ -39,9 +39,9 @@ export default function Home() {
       alert('メールアドレスまたはパスワードが無効です')
     }
   }
+
   return (
     <div>
-      <Menu />
       <div className="h-screen w-screen flex flex-col gap-9 p-4 items-center justify-center bg-white">
         <Image
           src="/reminico.svg"
@@ -50,17 +50,7 @@ export default function Home() {
           height={60}
           className="mb-6"
         />
-        <Card
-          gap={7}
-          padding={{
-            x: 4,
-            y: 4,
-            top: 4,
-            bottom: 22,
-            left: 4,
-            right: 4,
-          }}
-        >
+        <Card gap={7} className="p-1 pb-[22px]">
           <div className="w-full flex flex-col gap-1.5">
             <Label htmlFor="email">
               メール
