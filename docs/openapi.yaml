@@ -35,6 +35,8 @@ tags:
     description: 支払い情報に関するエンドポイント
   - name: histories
     description: 履歴情報に関するエンドポイント
+  - name: logs
+    description: ログ情報に関するエンドポイント
 
 paths:
   /users:
@@ -1451,7 +1453,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response500'
-
+  /logs:
+    get:
+      tags:
+        - logs
+      summary: ログ一覧を取得
+      description: 全てのログの情報を取得します。
+      operationId: findAllLogs
+      responses:
+        '200':
+          description: ログ一覧の取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Log'
+        '401':
+          description: 認証に失敗した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response401'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+    post:
+      tags:
+        - logs
+      summary: 新しいログを作成
+      description: 新しいログを登録します。
+      operationId: createLog
+      requestBody:
+        description: 新しいログ情報
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogCreate'
+      responses:
+        '201':
+          description: ログの作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Log'
+        '400':
+          description: リクエストが不正な場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response400'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
+  /logs/{id}:
+    get:
+      tags:
+        - logs
+      summary: 特定のログを取得
+      description: ログIDに基づいて、特定のログの情報を取得します。
+      operationId: findLogById
+      parameters:
+        - name: id
+          in: path
+          description: ログID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: ログの取得に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Log'
+        '404':
+          description: ログが見つからない場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response404'
+        '500':
+          description: サーバーエラーが発生した場合
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response500'
 components:
   schemas:
     User:
@@ -1748,6 +1843,40 @@ components:
           example: '2024-10-21T10:00:00Z'
       xml:
         name: user_classes
+
+    Log:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        event:
+          type: string
+          example: 'User logged in'
+        user_id:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-10-21T10:00:00Z'
+      xml:
+        name: log
+
+    LogCreate:
+      type: object
+      properties:
+        event:
+          type: string
+          example: 'User logged in'
+        user_id:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-426614174000'
+      xml:
+        name: log_create
 
     UserUpdate:
       type: object
