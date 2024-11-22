@@ -4,7 +4,7 @@ import { CapsuleDetailsDto } from './dto/capsule-details.dto';
 import { MemberDto } from './dto/member.dto';
 import { CreateCapsuleInput } from './dto/create-capsule.input';
 import { CapsuleDto } from './dto/capsule.dto';
-
+import { UpdateCapsuleDto } from './dto/capsule-update.dto';
 @Resolver()
 export class CapsuleResolver {
   constructor(private readonly capsuleService: CapsuleService) {}
@@ -28,9 +28,42 @@ export class CapsuleResolver {
 
   // カプセルを作成するMutation
   @Mutation(() => CapsuleDto)
-  createCapsule(
+  async createCapsule(
     @Args('createCapsuleInput') input: CreateCapsuleInput,
   ): Promise<CapsuleDto> {
-    return this.capsuleService.createCapsule(input);
+    return await this.capsuleService.createCapsule(input);
+  }
+
+  // すべてのカプセルを取得する Query
+  @Query(() => [CapsuleDto], { name: 'getAllCapsules' })
+  async getAllCapsules(): Promise<CapsuleDto[]> {
+    console.log('getAllCapsules resolver called');
+    return await this.capsuleService.getAllCapsules();
+  }
+
+  /**
+   * 特定のカプセルを取得するクエリ
+   * @param id - カプセルID
+   * @returns カプセルの詳細
+   */
+  @Query(() => CapsuleDto, { name: 'getCapsuleById' })
+  async getCapsuleById(
+    @Args('id', { type: () => String }) id: string,
+  ): Promise<CapsuleDto> {
+    return await this.capsuleService.getCapsuleById(id);
+  }
+
+  /**
+   * カプセル情報を更新
+   * @param id - カプセルID
+   * @param updateCapsuleDto - 更新内容
+   * @returns 更新されたカプセル情報
+   */
+  @Mutation(() => CapsuleDto, { name: 'updateCapsule' })
+  async updateCapsule(
+    @Args('id') id: string,
+    @Args('updateCapsuleDto') updateCapsuleDto: UpdateCapsuleDto,
+  ): Promise<CapsuleDto> {
+    return this.capsuleService.updateCapsule(id, updateCapsuleDto);
   }
 }

@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-//import { AuthService } from '../auth/auth.service';
+import { CapsuleDto } from './dto/capsule.dto';
+import { UpdateCapsuleDto } from './dto/capsule-update.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CapsuleService {
@@ -16,7 +18,7 @@ export class CapsuleService {
     size: string;
     releaseDate: Date;
     uploadDeadline: Date;
-  }) {
+  }): Promise<CapsuleDto> {
     const { classId, size, releaseDate, uploadDeadline } = data;
 
     // Class ID の存在確認
@@ -29,7 +31,7 @@ export class CapsuleService {
     }
 
     // 新しいカプセルの作成
-    const newCapsule = await this.prisma.capsule.create({
+    const newCapsule: CapsuleDto = await this.prisma.capsule.create({
       data: {
         class_id: classId,
         size,
@@ -38,13 +40,7 @@ export class CapsuleService {
       },
     });
 
-    return {
-      id: newCapsule.id,
-      classId: newCapsule.class_id,
-      size: newCapsule.size,
-      releaseDate: newCapsule.release_date,
-      uploadDeadline: newCapsule.upload_deadline,
-    };
+    return newCapsule;
   }
 
   /**
@@ -109,5 +105,67 @@ export class CapsuleService {
       name: `${member.user.lastName} ${member.user.firstName}`,
       role: member.user.role,
     }));
+  }
+
+  /**
+   * カプセル一覧を取得
+   * @returns カプセルのリスト
+   */
+
+  async getAllCapsules(): Promise<CapsuleDto[]> {
+    const capsules = await this.prisma.capsule.findMany({
+      include: {
+        media: true,
+      },
+    });
+
+    return capsules;
+  }
+
+  /**
+   * 特定のカプセルを取得
+   * @param id - カプセルID
+   * @returns カプセルの詳細
+   */
+
+  async getCapsuleById(id: string) {
+    const capsule = await this.prisma.capsule.findUnique({
+      where: { id },
+      include: {
+        media: true, // 必要に応じてリレーションデータを含める
+      },
+    });
+    if (!capsule) {
+      throw new NotFoundException(`Capsule with ID ${id} not found`);
+    }
+    return capsule as CapsuleDto;
+  }
+
+  /**
+   * カプセル情報を更新
+   * @param id - カプセルID
+   * @param updateData - 更新内容
+   * @returns 更新されたカプセル情報
+   */
+
+  async updateCapsule(id: string, updateData: UpdateCapsuleDto) {
+    const existingCapsule = await this.prisma.capsule.findUnique({
+      where: { id },
+    });
+
+    if (!existingCapsule) {
+      throw new NotFoundException(`Capsule with ID ${id} not found`);
+    }
+
+    // 更新処理
+    const updatedCapsule = await this.prisma.capsule.update({
+      where: { id },
+      data: updateData as Prisma.CapsuleUpdateInput,
+      include: {
+        media: true, // 必要ならリレーションも含める
+      },
+    });
+
+    return updatedCapsule;
   }
 }
