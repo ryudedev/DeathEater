@@ -21,15 +21,15 @@ export default function Logs({ logs, filterUserId = null }: LogsProps) {
       {logs
         .filter((log) => filterUserId === null || log.user_id === filterUserId)
         .map((log) => (
-          <>
-            <div key={log.id} className="flex flex-col gap-2">
+          <div key={log.id}>
+            <div className="flex flex-col gap-2">
               <span className="text-description text-sm">
                 {dateToYYYYMMDD(log.created_at)}
               </span>
               <p className="">{log.event}</p>
             </div>
             <hr className="bg-border" />
-          </>
+          </div>
         ))}
     </Card>
   )
