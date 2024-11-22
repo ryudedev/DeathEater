@@ -1,21 +1,36 @@
-import { Resolver, Query, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { CapsuleService } from './capsule.service';
-import { CapsuleContentDto } from './dto/capsule-content.dto';
-import { CapsuleModule } from './capsule.module';
+import { CapsuleDetailsDto } from './dto/capsule-details.dto';
+import { MemberDto } from './dto/member.dto';
+import { CreateCapsuleInput } from './dto/create-capsule.input';
+import { CapsuleDto } from './dto/capsule.dto';
 
 @Resolver()
 export class CapsuleResolver {
   constructor(private readonly capsuleService: CapsuleService) {}
 
-  //特定のカプセル内のコンテンツ(メディア)を取得するクエリ
-  @Query(() => [CapsuleContentDto])
-  async getCapsuleContent(@Args('capsuleId') capsuleId: string) {
-    return this.this.capsuleService.getCapsuleContent(capsuleId); // カプセルコンテンツを取得
+  // カプセルの詳細を取得するQuery
+  @Query(() => CapsuleDetailsDto)
+  async getCapsuleDetails(
+    @Args('capsuleId') capsuleId: string,
+  ): Promise<CapsuleDetailsDto> {
+    console.log('Received capsuleId:', capsuleId); // 追加
+    return await this.capsuleService.getCapsuleDetails(capsuleId);
   }
 
-  //ユーザーに関連するカプセルをすべて取得するクエリ
-  @Query(() => [CapsuleModule])
-  async getUserCapsules(@Args('userId') userId: string) {
-    return this.capsuleService.getUserCapsules(userId); // ユーザーのカプセル一覧を取得
+  // カプセルに関連するメンバーを取得するQuery
+  @Query(() => [MemberDto])
+  async getCapsuleMembers(
+    @Args('classId') classId: string,
+  ): Promise<MemberDto[]> {
+    return await this.capsuleService.getCapsuleMembers(classId);
+  }
+
+  // カプセルを作成するMutation
+  @Mutation(() => CapsuleDto)
+  createCapsule(
+    @Args('createCapsuleInput') input: CreateCapsuleInput,
+  ): Promise<CapsuleDto> {
+    return this.capsuleService.createCapsule(input);
   }
 }
