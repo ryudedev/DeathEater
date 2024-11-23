@@ -1,5 +1,5 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { Media } from './media.dto';
+import { MediaOutput } from './media.output';
 
 @ObjectType()
 export class CapsuleDto {
@@ -24,6 +24,6 @@ export class CapsuleDto {
   @Field()
   updated_at: Date;
 
-  @Field(() => [Media], { nullable: true })
-  media?: Media[];
+  @Field(() => [MediaOutput], { nullable: true })
+  media?: MediaOutput[];
 }

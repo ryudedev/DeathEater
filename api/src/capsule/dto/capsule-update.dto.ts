@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { Media } from './media.dto';
+import { MediaInput } from './media.input';
 
 @InputType()
 export class UpdateCapsuleDto {
@@ -15,6 +15,6 @@ export class UpdateCapsuleDto {
   @Field({ nullable: true })
   upload_deadline?: Date;
 
-  @Field(() => [Media], { nullable: true })
-  media?: Media[];
+  @Field(() => [MediaInput], { nullable: true })
+  media?: MediaInput[];
 }
