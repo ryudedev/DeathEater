@@ -7,6 +7,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { CapsuleModule } from './capsule/capsule.module';
+import { ClassModule } from './class/class.module';
 
 // 環境変数を読み込むための設定
 import * as dotenv from 'dotenv';
@@ -26,6 +27,7 @@ dotenv.config();
     }),
     // Capsule 機能に関連するモジュールを追加
     CapsuleModule,
+    ClassModule,
   ],
   controllers: [AppController],
   providers: [AppService],
