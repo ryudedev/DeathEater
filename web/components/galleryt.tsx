@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import React, { useState } from 'react'
 
 interface Gallery {
@@ -20,7 +21,7 @@ const ImageCheckbox: React.FC<Gallery> = ({ imageUrl, label, onChange }) => {
       className="relative w-20 h-20 border-2 rounded-lg overflow-hidden cursor-pointer transition-all"
       onClick={handleClick}
     >
-      <img
+      <Image
         src={imageUrl}
         alt={label}
         className="w-full h-full object-cover"

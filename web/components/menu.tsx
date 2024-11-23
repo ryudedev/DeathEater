@@ -33,12 +33,7 @@ const Menu: React.FC = () => {
   ]
 
   return (
-    <Card
-      flexDir="column"
-      gap={3}
-      bgColor="white"
-      padding={{ x: 4, y: 6, top: 6, bottom: 6 }}
-    >
+    <Card flexDir="column" gap={3} bgColor="white" className="px-1 py-1.5">
       {menuItems.map((item, index) => (
         <div key={`menu-item-${index}`}>
           <Link href={item.link} className="text-xs text-[#363853]">
