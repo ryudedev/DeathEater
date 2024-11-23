@@ -4,6 +4,7 @@ import Button from '@/components/button'
 import Card from '@/components/card'
 import Input from '@/components/input'
 import Label from '@/components/label'
+import Logs from '@/components/logs'
 import Message from '@/components/message'
 import { cognitoUserPool } from '@/utils/cognito'
 import { AuthenticationDetails, CognitoUser } from 'amazon-cognito-identity-js'
@@ -74,17 +75,7 @@ export default function Home() {
           height={60}
           className="mb-6"
         />
-        <Card
-          gap={7}
-          padding={{
-            x: 4,
-            y: 4,
-            top: 4,
-            bottom: 22,
-            left: 4,
-            right: 4,
-          }}
-        >
+        <Card gap={7} className="p-1 pb-[22px]">
           <div className="w-full flex flex-col gap-1.5 p-3">
             <Label htmlFor="email">
               メール
