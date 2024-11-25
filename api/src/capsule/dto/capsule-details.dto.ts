@@ -21,10 +21,10 @@ export class CapsuleDetailsDto {
   id: string;
 
   @Field()
-  releaseDate: Date;
+  release_date: Date;
 
   @Field()
-  uploadDeadline: Date;
+  upload_deadline: Date;
 
   @Field()
   size: string;
@@ -34,5 +34,5 @@ export class CapsuleDetailsDto {
 
   // classId が必要なら追加
   @Field({ nullable: true })
-  classId?: string;
+  class_id?: string;
 }

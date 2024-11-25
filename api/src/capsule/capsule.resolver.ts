@@ -5,6 +5,10 @@ import { MemberDto } from './dto/member.dto';
 import { CreateCapsuleInput } from './dto/create-capsule.input';
 import { CapsuleDto } from './dto/capsule.dto';
 import { UpdateCapsule } from './dto/capsule-update.input';
+import {
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 @Resolver()
 export class CapsuleResolver {
   constructor(private readonly capsuleService: CapsuleService) {}
@@ -14,8 +18,19 @@ export class CapsuleResolver {
   async getCapsuleDetails(
     @Args('capsuleId') capsuleId: string,
   ): Promise<CapsuleDetailsDto> {
-    console.log('Received capsuleId:', capsuleId); // 追加
-    return await this.capsuleService.getCapsuleDetails(capsuleId);
+    try {
+      console.log('Received capsuleId:', capsuleId); // 追加
+      return await this.capsuleService.getCapsuleDetails(capsuleId);
+    } catch (error) {
+      console.error(
+        `Error fetching capsule details for ID ${capsuleId}:`,
+        error,
+      );
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(
+        'Failed to fetch capsule details.',
+      );
+    }
   }
 
   // カプセルに関連するメンバーを取得するQuery
@@ -23,7 +38,17 @@ export class CapsuleResolver {
   async getCapsuleMembers(
     @Args('classId') classId: string,
   ): Promise<MemberDto[]> {
-    return await this.capsuleService.getCapsuleMembers(classId);
+    try {
+      return await this.capsuleService.getCapsuleMembers(classId);
+    } catch (error) {
+      console.error(
+        `Error fetching capsule members for class ID ${classId}:`,
+        error,
+      );
+      throw new InternalServerErrorException(
+        'Failed to fetch capsule members.',
+      );
+    }
   }
 
   // カプセルを作成するMutation
@@ -31,14 +56,24 @@ export class CapsuleResolver {
   async createCapsule(
     @Args('createCapsuleInput') input: CreateCapsuleInput,
   ): Promise<CapsuleDto> {
-    return await this.capsuleService.createCapsule(input);
+    try {
+      return await this.capsuleService.createCapsule(input);
+    } catch (error) {
+      console.error('Error creating capsule:', error);
+      throw new InternalServerErrorException('Failed to create capsule.');
+    }
   }
 
   // すべてのカプセルを取得する Query
   @Query(() => [CapsuleDto], { name: 'getAllCapsules' })
   async getAllCapsules(): Promise<CapsuleDto[]> {
-    console.log('getAllCapsules resolver called');
-    return await this.capsuleService.getAllCapsules();
+    try {
+      console.log('getAllCapsules resolver called');
+      return await this.capsuleService.getAllCapsules();
+    } catch (error) {
+      console.error('Error fetching all capsules:', error);
+      throw new InternalServerErrorException('Failed to fetch all capsules.');
+    }
   }
 
   /**
@@ -50,7 +85,13 @@ export class CapsuleResolver {
   async getCapsuleById(
     @Args('id', { type: () => String }) id: string,
   ): Promise<CapsuleDto> {
-    return await this.capsuleService.getCapsuleById(id);
+    try {
+      return await this.capsuleService.getCapsuleById(id);
+    } catch (error) {
+      console.error(`Error fetching capsule with ID ${id}:`, error);
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException('Failed to fetch capsule by ID.');
+    }
   }
 
   /**
@@ -64,7 +105,13 @@ export class CapsuleResolver {
     @Args('id') id: string,
     @Args('updateCapsule') updateCapsule: UpdateCapsule,
   ): Promise<CapsuleDto> {
-    return this.capsuleService.updateCapsule(id, updateCapsule);
+    try {
+      return this.capsuleService.updateCapsule(id, updateCapsule);
+    } catch (error) {
+      console.error(`Error updating capsule with ID ${id}:`, error);
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException('Failed to update capsule.');
+    }
   }
 
   /**
@@ -74,7 +121,13 @@ export class CapsuleResolver {
    */
   @Mutation(() => Boolean, { name: 'deleteCapsule' })
   async deleteCapsule(@Args('id') id: string): Promise<boolean> {
-    await this.capsuleService.deleteCapsule(id);
-    return true; // 成功時に true を返す
+    try {
+      await this.capsuleService.deleteCapsule(id);
+      return true; // 成功時に true を返す
+    } catch (error) {
+      console.error(`Error deleting capsule with ID ${id}:`, error);
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException('Failed to delete capsule.');
+    }
   }
 }

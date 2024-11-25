@@ -79,8 +79,8 @@ export class CapsuleService {
 
     return {
       id: capsule.id,
-      releaseDate: capsule.release_date,
-      uploadDeadline: capsule.upload_deadline,
+      release_date: capsule.release_date,
+      upload_deadline: capsule.upload_deadline,
       size: capsule.size,
       mediaStats,
     };
@@ -186,6 +186,11 @@ export class CapsuleService {
     //カプセルを削除
     await this.prisma.capsule.delete({
       where: { id },
+    });
+    //削除成功時のメッセージ
+    console.log({
+      status: 202,
+      message: '削除に成功しました。',
     });
   }
 }
