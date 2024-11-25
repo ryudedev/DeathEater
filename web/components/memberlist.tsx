@@ -11,16 +11,24 @@ type MemberListProps = {
   members: MemberItem[]
 }
 
+function RoleIcon({ role }: { role: MemberItem['role'] }) {
+  const roleToSrc = {
+    管理者: '/leader.svg',
+    サブリーダー: '/subleader.svg',
+    メンバー: '/member.svg',
+  }
+  return <Image src={roleToSrc[role]} alt={role} width={50} height={50} />
+}
 const roleToPhoto: Record<MemberItem['role'], JSX.Element> = {
-  管理者: <Image src="/leader.svg" alt="管理者" width={50} height={50} />,
-  サブリーダー: (
-    <Image src="/subleader.svg" alt="サブリーダー" width={50} height={50} />
-  ),
-  メンバー: <Image src="/member.svg" alt="メンバー" width={50} height={50} />,
+  管理者: <RoleIcon role="管理者" />,
+  サブリーダー: <RoleIcon role="サブリーダー" />,
+  メンバー: <RoleIcon role="メンバー" />,
 }
 
 export default function MemberList({ members }: MemberListProps) {
-  const groupedMembers = members.reduce(
+  const groupedMembers = members.reduce<
+    Record<MemberItem['role'], MemberItem[]>
+  >(
     (acc: Record<MemberItem['role'], MemberItem[]>, member) => {
       if (!acc[member.role]) {
         acc[member.role] = []
@@ -39,8 +47,12 @@ export default function MemberList({ members }: MemberListProps) {
             {roleToPhoto[role as MemberItem['role']]}
           </div>
           <div className="flex flex-col items-center justify-center pt-6 pr-20">
-            {roleMembers.map((member, idx) => (
-              <Member key={idx} role={member.role} name={member.name} />
+            {roleMembers.map((member) => (
+              <Member
+                key={`${member.role}-${member.name}`} // 修正: 一意のキーを生成
+                role={member.role}
+                name={member.name}
+              />
             ))}
           </div>
         </Card>
