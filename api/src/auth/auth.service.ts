@@ -5,7 +5,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-//import bcrypt from 'bcryptjs';
 import * as bcrypt from 'bcryptjs';
 import { AuthDto } from './dto/auth.dto';
 import { SignInResponse } from './dto/signin-response.dto';
