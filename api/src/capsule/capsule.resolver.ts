@@ -4,7 +4,7 @@ import { CapsuleDetailsDto } from './dto/capsule-details.dto';
 import { MemberDto } from './dto/member.dto';
 import { CreateCapsuleInput } from './dto/create-capsule.input';
 import { CapsuleDto } from './dto/capsule.dto';
-import { UpdateCapsuleDto } from './dto/capsule-update.dto';
+import { UpdateCapsule } from './dto/capsule-update.input';
 @Resolver()
 export class CapsuleResolver {
   constructor(private readonly capsuleService: CapsuleService) {}
@@ -62,8 +62,19 @@ export class CapsuleResolver {
   @Mutation(() => CapsuleDto, { name: 'updateCapsule' })
   async updateCapsule(
     @Args('id') id: string,
-    @Args('updateCapsuleDto') updateCapsuleDto: UpdateCapsuleDto,
+    @Args('updateCapsule') updateCapsule: UpdateCapsule,
   ): Promise<CapsuleDto> {
-    return this.capsuleService.updateCapsule(id, updateCapsuleDto);
+    return this.capsuleService.updateCapsule(id, updateCapsule);
+  }
+
+  /**
+   * カプセルを削除
+   * @param id - カプセルID
+   * @returns 成功時に void を返す
+   */
+  @Mutation(() => Boolean, { name: 'deleteCapsule' })
+  async deleteCapsule(@Args('id') id: string): Promise<boolean> {
+    await this.capsuleService.deleteCapsule(id);
+    return true; // 成功時に true を返す
   }
 }

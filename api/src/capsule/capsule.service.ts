@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CapsuleDto } from './dto/capsule.dto';
-import { UpdateCapsuleDto } from './dto/capsule-update.dto';
+import { UpdateCapsule } from './dto/capsule-update.input';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -148,7 +148,7 @@ export class CapsuleService {
    * @returns 更新されたカプセル情報
    */
 
-  async updateCapsule(id: string, updateData: UpdateCapsuleDto) {
+  async updateCapsule(id: string, updateData: UpdateCapsule) {
     const existingCapsule = await this.prisma.capsule.findUnique({
       where: { id },
     });
@@ -167,5 +167,25 @@ export class CapsuleService {
     });
 
     return updatedCapsule;
+  }
+
+  /**
+   * カプセルを削除
+   * @param id - カプセルID
+   * @returns void
+   */
+  async deleteCapsule(id: string): Promise<void> {
+    // カプセルが存在するか確認
+    const existingCapsule = await this.prisma.capsule.findUnique({
+      where: { id },
+    });
+    if (!existingCapsule) {
+      throw new NotFoundException(`Capsule with ID ${id} not found`);
+    }
+
+    //カプセルを削除
+    await this.prisma.capsule.delete({
+      where: { id },
+    });
   }
 }
