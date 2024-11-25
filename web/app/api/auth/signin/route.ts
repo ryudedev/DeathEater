@@ -1,4 +1,5 @@
 import { userPool } from '@/lib/cognito' // Cognitoの設定をインポート
+import { set_cookie } from '@/lib/cookie'
 import { AuthenticationDetails, CognitoUser } from 'amazon-cognito-identity-js' // Cognito関連のクラスをインポート
 import { NextResponse } from 'next/server' // Next.jsのレスポンスヘルパーをインポート
 
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
         })
 
         // CookieにJWTトークンとメールアドレスを保存
-        response.cookies.set('jwtToken', token, {
+        set_cookie('jwtToken', token, {
           httpOnly: true, // クライアント側からのJavaScriptでのアクセスを防止
           secure: process.env.NODE_ENV === 'production', // HTTPSでのみ送信
           sameSite: 'strict', // CSRF対策のため、同一サイトでのみ送信
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
           maxAge: 60 * 60 * 24, // Cookieの有効期限（例: 1日）
         })
 
-        response.cookies.set('email', email, {
+        set_cookie('email', email, {
           httpOnly: false, // クライアント側からアクセス可能
           secure: process.env.NODE_ENV === 'production', // HTTPSでのみ送信
           sameSite: 'strict', // CSRF対策のため、同一サイトでのみ送信
