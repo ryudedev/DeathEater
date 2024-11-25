@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
@@ -66,20 +66,18 @@ async function main() {
         email: 'ecc@comp.ac.jp',
         lastName: '大谷',
         firstName: '翔平',
-        password: 'password124',
-        role: 'member',
+        role: Role.ROOT,
       },
       {
         email: 'test@comp.ac.jp',
         lastName: '佐藤',
         firstName: '健',
         password: 'password124',
-        role: 'member',
+        role: Role.ADMIN,
       },
     ];
 
     for (const userData of usersData) {
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
       await prisma.user.upsert({
         where: { email: userData.email },
         update: {},
@@ -87,7 +85,6 @@ async function main() {
           email: userData.email,
           lastName: userData.lastName,
           firstName: userData.firstName,
-          password: hashedPassword,
           role: userData.role,
         },
       });

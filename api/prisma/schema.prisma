@@ -7,6 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  // 学校管理者
+  ROOT
+  // クラスの管理者
+  ADMIN
+  // クラス代表者
+  LEADER
+  // 一般ユーザー
+  MEMBER
+}
+
 model User {
   // プライマリキー、cuid()によるユニークID
   id         String   @id @default(cuid())
@@ -16,13 +27,11 @@ model User {
   lastName   String
   // ユーザーの名前
   firstName  String
-  // ハッシュ化されたパスワード
-  password   String
-  // ロール(デフォルト：member)                   
-  role       String   @default("member")
+  // ロール(デフォルト：member)
+  role       Role   @default(MEMBER)
   // 作成日時
   created_at DateTime @default(now())
-  // 更新日時 
+  // 更新日時
   updated_at DateTime @updatedAt
 
   stacks      Stack[]
