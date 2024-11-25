@@ -7,6 +7,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { CapsuleModule } from './capsule/capsule.module';
+import { SchoolModule } from './school/school.module';
 import { ClassModule } from './class/class.module';
 import { OrgModule } from './org/org.module';
 
@@ -28,6 +29,7 @@ dotenv.config();
     }),
     // Capsule 機能に関連するモジュールを追加
     CapsuleModule,
+    SchoolModule,
     ClassModule,
     OrgModule,
   ],
