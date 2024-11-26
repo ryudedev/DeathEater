@@ -6,6 +6,9 @@ export class UserDto {
   id: string;
 
   @Field()
+  cognito_id: string;
+
+  @Field()
   email: string;
 
   @Field({ nullable: true })
@@ -16,4 +19,10 @@ export class UserDto {
 
   @Field()
   role: string;
+
+  @Field()
+  created_at: Date;
+
+  @Field()
+  updated_at: Date;
 }
