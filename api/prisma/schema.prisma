@@ -21,6 +21,8 @@ enum Role {
 model User {
   // プライマリキー、cuid()によるユニークID
   id         String   @id @default(cuid())
+  // CognitoのユーザーID
+  cognito_id String   @unique
   // メールアドレス
   email      String   @unique
   // ユーザーの苗字

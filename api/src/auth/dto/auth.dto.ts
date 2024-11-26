@@ -24,12 +24,6 @@ export class AuthDto {
   @Field()
   @IsNotEmpty()
   @IsString()
-  @MinLength(6)
-  password: string;
-
-  @Field()
-  @IsNotEmpty()
-  @IsString()
   @MinLength(1)
   firstName: string;
 
@@ -43,4 +37,9 @@ export class AuthDto {
   @IsEnum(Role)
   @IsNotEmpty()
   role: Role;
+
+  @Field()
+  @IsNotEmpty()
+  @IsString()
+  cognito_id: string;
 }

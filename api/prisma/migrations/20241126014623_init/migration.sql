@@ -4,6 +4,7 @@ CREATE TYPE "Role" AS ENUM ('ROOT', 'ADMIN', 'LEADER', 'MEMBER');
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
+    "cognito_id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
@@ -119,6 +120,9 @@ CREATE TABLE "UserClasses" (
 
     CONSTRAINT "UserClasses_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_cognito_id_key" ON "User"("cognito_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
