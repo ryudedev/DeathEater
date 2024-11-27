@@ -6,14 +6,20 @@ export class CapsuleDto {
   id: string;
 
   @Field()
-  classId: string;
+  class_id: string;
 
   @Field()
   size: string;
 
   @Field()
-  releaseDate: Date;
+  release_date: Date;
 
   @Field()
-  uploadDeadline: Date;
+  upload_deadline: Date;
+
+  @Field()
+  created_at: Date;
+
+  @Field()
+  updated_at: Date;
 }

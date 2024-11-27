@@ -3,14 +3,14 @@ import { InputType, Field } from '@nestjs/graphql';
 @InputType()
 export class CreateCapsuleInput {
   @Field()
-  classId: string;
+  class_id: string;
 
   @Field()
   size: string;
 
   @Field()
-  releaseDate: Date;
+  release_date: Date;
 
   @Field()
-  uploadDeadline: Date;
+  upload_deadline: Date;
 }

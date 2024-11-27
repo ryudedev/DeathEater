@@ -1,7 +1,11 @@
 export type User = {
-  id: number
+  id: string
+  cognito_id: string
   email: string
-  name: string
-  avatar: string
+  lastName: string
+  firstName: string
   role: string
+  avatar?: string
+  created_at: Date
+  updated_at: Date
 }

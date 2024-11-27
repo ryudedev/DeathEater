@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
@@ -40,12 +40,15 @@ async function main() {
         },
       },
       include: {
-        classes: true,
+        classes: true, // クラスも含めて取得
       },
     });
 
+    // 既存のクラスを取得し、別の学校に関連付け
+    const existingClasses = school.classes.map((cls) => ({ id: cls.id }));
+
     const school2 = await prisma.school.upsert({
-      where: { school_registration_number: 'KRY-718' }, // 正しいキーを指定
+      where: { school_registration_number: 'KRY-718' },
       update: {},
       create: {
         name: 'Reminico-No.2',
@@ -53,42 +56,63 @@ async function main() {
         address: '東京都墨田区押上１丁目１−２',
         organization_id: organization2.id,
         classes: {
-          create: [{ name: '3年B組' }, { name: 'IE4A' }],
+          connect: existingClasses, // 既存のクラスを関連付け
         },
       },
       include: {
-        classes: true,
+        classes: true, // 確認のためクラスを含めて取得
       },
     });
+
     // Userの作成
     const usersData = [
       {
-        email: 'ecc@comp.ac.jp',
-        lastName: '大谷',
-        firstName: '翔平',
-        password: 'password124',
-        role: 'member',
+        cognito_id: 'b97ab5bc-b041-704b-c057-1da55dc250de',
+        email: '2210086@ecc.ac.jp',
+        lastName: '御手洗',
+        firstName: '匠',
+        role: Role.MEMBER,
+        class_name: '3年B組', // class_idではなく、class_nameで受け取る
       },
       {
-        email: 'test@comp.ac.jp',
-        lastName: '佐藤',
-        firstName: '健',
-        password: 'password124',
-        role: 'member',
+        cognito_id: '397a25dc-a041-705e-f747-e0e0b04e3fe8',
+        email: '2210441@ecc.ac.jp',
+        lastName: '高本',
+        firstName: '龍信',
+        role: Role.ADMIN,
+        class_name: 'IE4A', // class_idではなく、class_nameで受け取る
       },
     ];
 
     for (const userData of usersData) {
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
-      await prisma.user.upsert({
+      // Userの作成または取得
+      const user = await prisma.user.upsert({
         where: { email: userData.email },
         update: {},
         create: {
+          cognito_id: userData.cognito_id,
           email: userData.email,
           lastName: userData.lastName,
           firstName: userData.firstName,
-          password: hashedPassword,
           role: userData.role,
+        },
+      });
+
+      // class_nameからclass_idを取得
+      const userClass = await prisma.class.findFirst({
+        where: { name: userData.class_name }, // class_nameでクラスを検索
+      });
+
+      if (!userClass) {
+        console.error(`Class with name ${userData.class_name} not found.`);
+        continue;
+      }
+
+      // UserClassesの関連付けを作成
+      await prisma.userClasses.create({
+        data: {
+          user_id: user.id, // 取得したユーザのID
+          class_id: userClass.id, // 関連付けるクラスID
         },
       });
     }
@@ -111,7 +135,7 @@ async function main() {
 
     for (const capsuleData of capsulesData) {
       if (!capsuleData.class_id) {
-        console.error('Class ID not found for capsule:', capsuleData.title);
+        console.error('Class ID not found for capsule.');
         continue;
       }
       await prisma.capsule.create({

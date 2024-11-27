@@ -87,7 +87,9 @@ const Header: React.FC<HeaderProps> = ({
               }}
             >
               <p className="text-sm text-gray-500 mb-4">{user.role}</p>
-              <p className="text-lg font-semibold mb-2">{user.name}</p>
+              <p className="text-lg font-semibold mb-2">
+                {user.lastName} {user.firstName}
+              </p>
               <p className="text-sm text-gray-500 mb-4">{user.email}</p>
 
               <hr className="border-gray-200 my-2" />
