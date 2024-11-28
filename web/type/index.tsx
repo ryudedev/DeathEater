@@ -31,6 +31,7 @@ export type Class = {
 
 export type Capsule = {
   id?: string
+  name?: string
   class_id?: string
   size?: number
   release_date?: Date
@@ -41,4 +42,10 @@ export type Capsule = {
 
 export type UserClassesWithoutCapsules = Omit<UserClasses, 'class'> & {
   class: Omit<Class, 'capsules'>
+}
+
+export type UserClassesWithClass = UserClasses & {
+  class: Class & {
+    capsules?: Capsule[]
+  }
 }

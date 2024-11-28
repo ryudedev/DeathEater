@@ -120,12 +120,14 @@ async function main() {
     // Capsuleの作成
     const capsulesData = [
       {
+        name: "IE4A's Capsule",
         class_id: school.classes[0]?.id, // クラスID
         size: 'small',
         release_date: new Date('2030-01-01T00:00:00.000Z'),
         upload_deadline: new Date('2029-12-31T00:00:00.000Z'),
       },
       {
+        name: "3年B組's Capsule",
         class_id: school2.classes[1]?.id, // クラスID
         size: 'medium',
         release_date: new Date('2031-03-01T00:00:00.000Z'),

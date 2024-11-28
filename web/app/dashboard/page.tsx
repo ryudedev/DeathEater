@@ -7,7 +7,12 @@ import TimeLimit from '@/components/timelimit'
 import { get_cookie } from '@/lib/cookie'
 import { calculateDateDifference } from '@/lib/date'
 import { GET_USER } from '@/lib/queries/users'
-import { Capsule, User, UserClassesWithoutCapsules } from '@/type'
+import {
+  Capsule,
+  User,
+  UserClassesWithClass,
+  UserClassesWithoutCapsules,
+} from '@/type'
 import { useQuery } from '@apollo/client'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -57,23 +62,26 @@ export default function Dashboard() {
       // UserオブジェクトからuserClassesを除外
       const userData = data.findUserByEmail
       if (userData) {
+        // userClassesを除外して新しいオブジェクトを作成(型宣言もしてください)
         const { userClasses, ...userWithoutClasses } = userData // userClassesを除外して新しいオブジェクトを作成
         setUser(userWithoutClasses)
 
         // UserClasses情報を変換して設定
-        const userClassesWithoutCapsules = userClasses?.map((userClass) => ({
-          ...userClass,
-          class: {
-            ...userClass.class, // classのプロパティを全て展開
-            capsules: undefined, // capsulesをundefinedに設定して削除
-          },
-        }))
+        const userClassesWithoutCapsules = userClasses?.map(
+          (userClass: UserClassesWithClass) => ({
+            ...userClass,
+            class: {
+              ...userClass.class, // classのプロパティを全て展開
+              capsules: undefined, // capsulesをundefinedに設定して削除
+            },
+          }),
+        )
 
         setUserClasses(userClassesWithoutCapsules)
 
         // capsules情報をuserClassesから抽出して設定
         const allCapsules = userClasses?.flatMap(
-          (userClass) => userClass.class.capsules || [],
+          (userClass: UserClassesWithClass) => userClass.class.capsules || [],
         )
         setCapsules(allCapsules)
       }
@@ -111,6 +119,9 @@ export default function Dashboard() {
                 />
               </div>
               <div className="flex-1 flex flex-col gap-2.5">
+                <h3 className="text-xl font-bold">
+                  {capsules[capsules.length - 1].name}
+                </h3>
                 <div className="flex flex-col gap-1 justify-end">
                   <MediaBar
                     image={24}

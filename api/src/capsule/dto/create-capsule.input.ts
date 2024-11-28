@@ -3,6 +3,9 @@ import { InputType, Field } from '@nestjs/graphql';
 @InputType()
 export class CreateCapsuleInput {
   @Field()
+  name: string;
+
+  @Field()
   class_id: string;
 
   @Field()

@@ -10,6 +10,7 @@ import { CapsuleModule } from './capsule/capsule.module';
 import { SchoolModule } from './school/school.module';
 import { ClassModule } from './class/class.module';
 import { OrgModule } from './org/org.module';
+import { HistoryModule } from './history/history.module';
 
 // 環境変数を読み込むための設定
 import * as dotenv from 'dotenv';
@@ -32,6 +33,7 @@ dotenv.config();
     SchoolModule,
     ClassModule,
     OrgModule,
+    HistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -56,6 +56,7 @@ CREATE TABLE "Class" (
 CREATE TABLE "Capsule" (
     "id" TEXT NOT NULL,
     "class_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "size" TEXT NOT NULL,
     "release_date" TIMESTAMP(3) NOT NULL,
     "upload_deadline" TIMESTAMP(3) NOT NULL,
@@ -105,6 +106,7 @@ CREATE TABLE "History" (
     "id" TEXT NOT NULL,
     "capsule_id" TEXT NOT NULL,
     "event" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -154,6 +156,9 @@ ALTER TABLE "Stack" ADD CONSTRAINT "Stack_uploaded_by_fkey" FOREIGN KEY ("upload
 
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "History" ADD CONSTRAINT "History_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "History" ADD CONSTRAINT "History_capsule_id_fkey" FOREIGN KEY ("capsule_id") REFERENCES "Capsule"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

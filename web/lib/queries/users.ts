@@ -19,6 +19,7 @@ export const GET_USER = gql`
           school_id
           capsules {
             id
+            name
             size
             release_date
             upload_deadline

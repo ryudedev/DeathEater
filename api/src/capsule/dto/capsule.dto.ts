@@ -6,6 +6,9 @@ export class CapsuleDto {
   id: string;
 
   @Field()
+  name: string;
+
+  @Field()
   class_id: string;
 
   @Field()

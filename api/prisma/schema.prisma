@@ -40,6 +40,7 @@ model User {
 
   stacks      Stack[]
   userClasses UserClasses[]
+  histories   History[]
 }
 
 model Organization {
@@ -105,6 +106,8 @@ model Capsule {
   id              String   @id @default(cuid())
   // Classとの関連ID
   class_id        String
+  // カプセルの名前
+  name            String
   // カプセルのサイズ
   size            String
   // カプセルを開封する日付
@@ -182,11 +185,14 @@ model History {
   capsule_id String
   // イベントの内容を記録するフィールド（例: "Media added"）
   event      String
+  // ユーザーのID
+  user_id    String
   // 作成日時
   created_at DateTime @default(now())
   // 更新日時
   updated_at DateTime @updatedAt
 
+  user    User    @relation(fields: [user_id], references: [id])
   capsule Capsule @relation(fields: [capsule_id], references: [id])
 }
 

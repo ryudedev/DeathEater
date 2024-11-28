@@ -13,7 +13,7 @@ export class CapsuleService {
    * @returns 作成されたカプセルの情報
    */
   async createCapsule(createCapsuleInput: CreateCapsuleInput) {
-    const { class_id, size, release_date, upload_deadline } =
+    const { name, class_id, size, release_date, upload_deadline } =
       createCapsuleInput;
 
     // Class ID の存在確認
@@ -28,10 +28,11 @@ export class CapsuleService {
     // 新しいカプセルの作成
     const newCapsule = await this.prisma.capsule.create({
       data: {
-        class_id: class_id,
+        name,
+        class_id,
         size,
-        release_date: release_date,
-        upload_deadline: upload_deadline,
+        release_date,
+        upload_deadline,
       },
     });
 
