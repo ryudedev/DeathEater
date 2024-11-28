@@ -9,20 +9,20 @@ export const GET_USER = gql`
       lastName
       firstName
       role
-      created_at
-      updated_at
       userClasses {
         id
         user_id
         class_id
-        created_at
-        updated_at
         class {
           id
           name
           school_id
-          created_at
-          updated_at
+          capsules {
+            id
+            size
+            release_date
+            upload_deadline
+          }
         }
       }
     }
