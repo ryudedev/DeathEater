@@ -16,3 +16,12 @@ export const GET_HISTORY = gql`
     }
   }
 `
+
+export const GET_MEMBER = gql`
+  query getMemberList($class_id: String!) {
+    getMemberList(class_id: $class_id) {
+      role
+      name
+    }
+  }
+`

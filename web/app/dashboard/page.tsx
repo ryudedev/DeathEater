@@ -5,21 +5,17 @@ import Logs from '@/components/logs'
 import TimeLimit from '@/components/timelimit'
 import { get_cookie } from '@/lib/cookie'
 import { GET_USER } from '@/lib/queries/users'
-import { useCapsules } from '@/store/capsules'
-import { User, UserClassesWithClass, UserClassesWithoutCapsules } from '@/type'
+import { useCapsules, useUser, useUserClasses } from '@/store'
+import { UserClassesWithClass } from '@/type'
 import { useQuery } from '@apollo/client'
 import { useEffect, useState } from 'react'
 
 export default function Dashboard() {
   const [email, setEmail] = useState<string | null | undefined>(null)
   // ユーザー情報を保持
-  const [user, setUser] = useState<
-    Omit<User, 'userClasses'> | null | undefined
-  >(null)
+  const { user, setUser } = useUser()
   // クラス情報を保持
-  const [userClasses, setUserClasses] = useState<
-    UserClassesWithoutCapsules[] | null | undefined
-  >(null)
+  const { userClasses, setUserClasses } = useUserClasses()
   // カプセル情報を保持
   // const [capsules, setCapsules] = useState<Capsule[] | null | undefined>(null)
   const { capsules, setCapsules } = useCapsules()

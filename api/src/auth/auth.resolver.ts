@@ -1,9 +1,9 @@
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
-import { MemberListDto } from './dto/member-list.dto';
 import { UpdateUserResponse } from './dto/update-user-response.dto';
 import { UserDto } from './dto/user.dto';
+import { MemberItemOutput } from './dto/member-item.output';
 
 @Resolver()
 export class AuthResolver {
@@ -28,17 +28,11 @@ export class AuthResolver {
   }
 
   // メンバー一覧を取得するQuery
-  @Query(() => MemberListDto) // 返り値の型を MemberListDto に変更
-  async getMemberList(): Promise<MemberListDto> {
-    // メンバーリストを取得
-    const members = await this.authService.getMemberList();
-
-    // メンバーリストを返す
-    return {
-      admin: members.admin,
-      subleaders: members.subleaders,
-      members: members.members,
-    };
+  @Query(() => [MemberItemOutput])
+  async getMemberList(
+    @Args('class_id') class_id: string,
+  ): Promise<MemberItemOutput[]> {
+    return await this.authService.getMemberList(class_id);
   }
 
   // メールアドレスとパスワードを更新するMutation

@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { ClassOutput } from 'src/class/dto/class.output';
+import { UserDto } from './user.dto';
 
 @ObjectType()
 export class UserClassesOutput {
@@ -19,5 +20,8 @@ export class UserClassesOutput {
   updated_at: Date;
 
   @Field(() => ClassOutput, { nullable: true })
-  class: ClassOutput;
+  class?: ClassOutput;
+
+  @Field(() => UserDto, { nullable: true })
+  user?: UserDto;
 }

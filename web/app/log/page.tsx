@@ -1,7 +1,7 @@
 'use client'
 import Header from '@/components/header'
 import Logs from '@/components/logs'
-import { useCapsules } from '@/store/capsules'
+import { useCapsules } from '@/store'
 
 export default function Log() {
   const { capsules } = useCapsules()

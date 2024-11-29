@@ -10,6 +10,9 @@ export class UserDto {
   @Field()
   cognito_id: string;
 
+  @Field({ nullable: true })
+  avatar?: string;
+
   @Field()
   email: string;
 

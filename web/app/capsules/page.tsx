@@ -2,7 +2,7 @@
 import { CapsuleStorage } from '@/components/capsuleStorage'
 import Header from '@/components/header'
 import Menu from '@/components/menu'
-import { useCapsules } from '@/store/capsules'
+import { useCapsules } from '@/store'
 
 export default function Capsules() {
   const { capsules } = useCapsules()
