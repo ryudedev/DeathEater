@@ -50,7 +50,7 @@ export default function Logs({ capsule_id, filterUserId = null }: LogsProps) {
   if (error) return <p>Error : {error.message}</p>
 
   return (
-    <Card flexDir="column" gap={2.5} className="p-6">
+    <Card flexDir="column" gap={2.5} className="p-6 overflow-scroll">
       {logs
         .filter(
           (log) =>

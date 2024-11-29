@@ -168,10 +168,7 @@ export default function Home() {
               ＞パスワードをお忘れの方はこちら
             </a>
             <Button
-              padding={{ x: 20, y: 8 }}
-              className="absolute w-[80px] h-[80px] flex items-start justify-start -right-6 -bottom-[27px] bg-[#441AFF] transition duration-300 font-semibold rounded-full"
-              itemsPosition="center"
-              justifyPosition="center"
+              className="absolute px-5 py-2 w-[80px] h-[80px] flex items-start justify-start -right-6 -bottom-[27px] bg-[#441AFF] transition duration-300 font-semibold rounded-full"
               type="submit"
             >
               <Image src="/Login.svg" alt="Icon" width={22} height={20} />

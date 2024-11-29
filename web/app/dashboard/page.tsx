@@ -5,12 +5,8 @@ import Logs from '@/components/logs'
 import TimeLimit from '@/components/timelimit'
 import { get_cookie } from '@/lib/cookie'
 import { GET_USER } from '@/lib/queries/users'
-import {
-  Capsule,
-  User,
-  UserClassesWithClass,
-  UserClassesWithoutCapsules,
-} from '@/type'
+import { useCapsules } from '@/store/capsules'
+import { User, UserClassesWithClass, UserClassesWithoutCapsules } from '@/type'
 import { useQuery } from '@apollo/client'
 import { useEffect, useState } from 'react'
 
@@ -25,7 +21,8 @@ export default function Dashboard() {
     UserClassesWithoutCapsules[] | null | undefined
   >(null)
   // カプセル情報を保持
-  const [capsules, setCapsules] = useState<Capsule[] | null | undefined>(null)
+  // const [capsules, setCapsules] = useState<Capsule[] | null | undefined>(null)
+  const { capsules, setCapsules } = useCapsules()
 
   useEffect(() => {
     console.log(userClasses)
@@ -94,7 +91,7 @@ export default function Dashboard() {
                 capsules[capsules.length - 1].release_date!,
               ).getTime()} // 開封時刻
             />
-            <CapsuleStorage capsules={capsules} />
+            <CapsuleStorage capsules={capsules} type="transition" />
             <Logs
               capsule_id={capsules[capsules.length - 1].id!}
               filterUserId={user?.id}
