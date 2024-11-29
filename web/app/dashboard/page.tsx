@@ -1,11 +1,9 @@
 'use client'
-import Card from '@/components/card'
+import { CapsuleStorage } from '@/components/capsuleStorage'
 import Header from '@/components/header'
-import MediaBar from '@/components/mediaBar'
-import { MediaItem, mediaType } from '@/components/mediaItem'
+import Logs from '@/components/logs'
 import TimeLimit from '@/components/timelimit'
 import { get_cookie } from '@/lib/cookie'
-import { calculateDateDifference } from '@/lib/date'
 import { GET_USER } from '@/lib/queries/users'
 import {
   Capsule,
@@ -14,7 +12,6 @@ import {
   UserClassesWithoutCapsules,
 } from '@/type'
 import { useQuery } from '@apollo/client'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 export default function Dashboard() {
@@ -30,16 +27,7 @@ export default function Dashboard() {
   // カプセル情報を保持
   const [capsules, setCapsules] = useState<Capsule[] | null | undefined>(null)
 
-  const mediaArray = [
-    mediaType.image,
-    mediaType.video,
-    mediaType.audio,
-    mediaType.text,
-    mediaType.free,
-  ]
-
   useEffect(() => {
-    console.log(user)
     console.log(userClasses)
     const fetchData = async () => {
       const email = await get_cookie('email')
@@ -85,8 +73,6 @@ export default function Dashboard() {
         )
         setCapsules(allCapsules)
       }
-
-      console.log(data.findUserByEmail)
     }
   }, [data])
 
@@ -108,41 +94,11 @@ export default function Dashboard() {
                 capsules[capsules.length - 1].release_date!,
               ).getTime()} // 開封時刻
             />
-            <Card flexDir="row" gap={2.5} className="p-6 items-center">
-              <div className="flex-1 flex px-2.5 py-2.5 justify-center">
-                <Image
-                  src="/Capsule.svg"
-                  alt="Capsule"
-                  width={148}
-                  height={61}
-                  className="w-full h-full max-h-[148px]"
-                />
-              </div>
-              <div className="flex-1 flex flex-col gap-2.5">
-                <h3 className="text-xl font-bold">
-                  {capsules[capsules.length - 1].name}
-                </h3>
-                <div className="flex flex-col gap-1 justify-end">
-                  <MediaBar
-                    image={24}
-                    audio={8}
-                    video={18}
-                    text={13}
-                    free={37}
-                  />
-                  <span className="text-description">
-                    {calculateDateDifference(
-                      new Date(capsules[capsules.length - 1].release_date!),
-                    )}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-[18px]">
-                  {mediaArray.map((type) => (
-                    <MediaItem type={type} key={type} />
-                  ))}
-                </div>
-              </div>
-            </Card>
+            <CapsuleStorage capsules={capsules} />
+            <Logs
+              capsule_id={capsules[capsules.length - 1].id!}
+              filterUserId={user?.id}
+            />
           </>
         )}
       </div>

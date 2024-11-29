@@ -183,6 +183,8 @@ model History {
   id         String   @id @default(cuid())
   // Capsuleモデルのidの参照キー
   capsule_id String
+  // イベント許可拒否のフィールド（外部キーとして設定）
+  history_id String?
   // イベントの内容を記録するフィールド（例: "Media added"）
   event      String
   // ユーザーのID
@@ -194,7 +196,15 @@ model History {
 
   user    User    @relation(fields: [user_id], references: [id])
   capsule Capsule @relation(fields: [capsule_id], references: [id])
+
+  // history_idが参照する外部キー（他のHistoryレコードを参照する場合）
+  history   History? @relation("HistoryHistory", fields: [history_id], references: [id])
+
+  // 逆方向のリレーション
+  historyRelations History[] @relation("HistoryHistory")
 }
+
+
 
 model UserClasses {
   // 自動インクリメントのプライマリキー

@@ -1,5 +1,4 @@
 import { PrismaClient, Role } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
@@ -72,7 +71,15 @@ async function main() {
         lastName: '御手洗',
         firstName: '匠',
         role: Role.MEMBER,
-        class_name: '3年B組', // class_idではなく、class_nameで受け取る
+        class_name: 'IE4A', // class_idではなく、class_nameで受け取る
+      },
+      {
+        cognito_id: 'b97ab5bc-b041-704b-c057-1da55dc3md9d',
+        email: '2210436@ecc.ac.jp',
+        lastName: '近藤',
+        firstName: '匠',
+        role: Role.LEADER,
+        class_name: 'IE4A', // class_idではなく、class_nameで受け取る
       },
       {
         cognito_id: '397a25dc-a041-705e-f747-e0e0b04e3fe8',
@@ -83,6 +90,8 @@ async function main() {
         class_name: 'IE4A', // class_idではなく、class_nameで受け取る
       },
     ];
+
+    const userIds = {}; // email -> userId マッピング
 
     for (const userData of usersData) {
       // Userの作成または取得
@@ -97,6 +106,8 @@ async function main() {
           role: userData.role,
         },
       });
+
+      userIds[userData.email] = user.id; // User IDを保持
 
       // class_nameからclass_idを取得
       const userClass = await prisma.class.findFirst({
@@ -121,28 +132,89 @@ async function main() {
     const capsulesData = [
       {
         name: "IE4A's Capsule",
-        class_id: school.classes[0]?.id, // クラスID
+        class_id: school.classes[1]?.id, // クラスID
         size: 'small',
         release_date: new Date('2030-01-01T00:00:00.000Z'),
         upload_deadline: new Date('2029-12-31T00:00:00.000Z'),
       },
       {
         name: "3年B組's Capsule",
-        class_id: school2.classes[1]?.id, // クラスID
+        class_id: school2.classes[0]?.id, // クラスID
         size: 'medium',
         release_date: new Date('2031-03-01T00:00:00.000Z'),
         upload_deadline: new Date('2031-02-28T00:00:00.000Z'),
       },
     ];
 
+    let smallCapsuleId;
+
     for (const capsuleData of capsulesData) {
       if (!capsuleData.class_id) {
         console.error('Class ID not found for capsule.');
         continue;
       }
-      await prisma.capsule.create({
+
+      const capsule = await prisma.capsule.create({
         data: capsuleData,
       });
+
+      if (capsuleData.size === 'small') {
+        smallCapsuleId = capsule.id; // smallカプセルのIDを保持
+      }
+    }
+
+    let previousHistoryId;
+
+    const historyData = [
+      {
+        capsule_id: smallCapsuleId,
+        event: 'カプセルに追加しました。',
+        user_id: userIds['2210086@ecc.ac.jp'],
+      },
+      {
+        capsule_id: smallCapsuleId,
+        event: '管理者に許可されました。',
+        user_id: userIds['2210441@ecc.ac.jp'],
+      },
+      {
+        capsule_id: smallCapsuleId,
+        event: 'カプセルに追加しました。',
+        user_id: userIds['2210436@ecc.ac.jp'],
+      },
+      {
+        capsule_id: smallCapsuleId,
+        event: '管理者に許可されました。',
+        user_id: userIds['2210441@ecc.ac.jp'],
+      },
+      {
+        capsule_id: smallCapsuleId,
+        event: 'カプセルに追加しました。',
+        user_id: userIds['2210086@ecc.ac.jp'],
+      },
+      {
+        capsule_id: smallCapsuleId,
+        event: '管理者に許可されました。',
+        user_id: userIds['2210441@ecc.ac.jp'],
+      },
+    ];
+
+    for (const history of historyData) {
+      // 前回の履歴IDをhistory_idとして設定
+      if (history.event.includes('管理者')) {
+        history.history_id = previousHistoryId;
+      }
+
+      console.log(history);
+
+      const record = await prisma.history.create({
+        data: history,
+      });
+
+      if (!record.event.includes('管理者')) {
+        previousHistoryId = record.id;
+      } else {
+        previousHistoryId = null;
+      }
     }
 
     console.log('Seed completed successfully.');

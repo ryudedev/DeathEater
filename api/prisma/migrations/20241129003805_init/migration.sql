@@ -105,6 +105,7 @@ CREATE TABLE "Payment" (
 CREATE TABLE "History" (
     "id" TEXT NOT NULL,
     "capsule_id" TEXT NOT NULL,
+    "history_id" TEXT,
     "event" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -162,6 +163,9 @@ ALTER TABLE "History" ADD CONSTRAINT "History_user_id_fkey" FOREIGN KEY ("user_i
 
 -- AddForeignKey
 ALTER TABLE "History" ADD CONSTRAINT "History_capsule_id_fkey" FOREIGN KEY ("capsule_id") REFERENCES "Capsule"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "History" ADD CONSTRAINT "History_history_id_fkey" FOREIGN KEY ("history_id") REFERENCES "History"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserClasses" ADD CONSTRAINT "UserClasses_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

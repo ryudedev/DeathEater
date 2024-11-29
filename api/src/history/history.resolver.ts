@@ -19,9 +19,11 @@ export class HistoryResolver {
     return await this.historyService.findAll();
   }
 
-  @Query(() => HistoryOutput)
-  async findOne(@Args('id') id: string): Promise<HistoryOutput> {
-    return await this.historyService.findOne(id);
+  @Query(() => [HistoryOutput])
+  async findByCapsuleId(
+    @Args('capsule_id') capsule_id: string,
+  ): Promise<HistoryOutput[]> {
+    return await this.historyService.findByCapsuleId(capsule_id);
   }
 
   @Mutation(() => HistoryOutput)

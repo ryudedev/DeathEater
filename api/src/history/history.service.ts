@@ -76,11 +76,12 @@ export class HistoryService {
     }
   }
 
-  async findOne(id: string): Promise<HistoryOutput> {
+  async findByCapsuleId(capsule_id: string): Promise<HistoryOutput[]> {
     try {
       // データベースから指定されたIDの履歴を取得
-      const record = await this.prisma.history.findUnique({
-        where: { id },
+      const record = await this.prisma.history.findMany({
+        where: { capsule_id },
+        include: { user: true },
       });
 
       // レコードが見つからない場合に例外をスロー
@@ -95,7 +96,7 @@ export class HistoryService {
         if (error.code === 'P2001') {
           // P2001: Record not found
           throw new NotFoundException(
-            `History record with ID ${id} does not exist.`,
+            `History record with CapsuleID ${capsule_id} does not exist.`,
           );
         }
       }

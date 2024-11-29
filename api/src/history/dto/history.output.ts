@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { UserDto } from 'src/auth/dto/user.dto';
 
 @ObjectType()
 export class HistoryOutput {
@@ -7,6 +8,9 @@ export class HistoryOutput {
 
   @Field()
   capsule_id: string;
+
+  @Field({ nullable: true })
+  history_id?: string;
 
   @Field()
   event: string;
@@ -19,4 +23,7 @@ export class HistoryOutput {
 
   @Field()
   updated_at: Date;
+
+  @Field(() => UserDto, { nullable: true })
+  user?: UserDto;
 }

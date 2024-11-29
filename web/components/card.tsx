@@ -20,8 +20,6 @@ export default function Card({
   const gapClass = gap ? `gap-${gap}` : 'gap-4'
   const bgColorClass = bgColor === 'blue' ? 'bg-[#441AFF]' : 'bg-white'
 
-  console.log(flexDirection, gapClass, bgColorClass)
-
   return (
     <div
       className={`w-full flex ${flexDirection} ${gapClass} ${bgColorClass} rounded-2xl drop-shadow-default overflow-hidden ${className}`}
