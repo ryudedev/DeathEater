@@ -4,8 +4,8 @@ interface Gallery {
   imageUrl: string
   label: string
   onChange: (isChecked: boolean) => void
-  showCheckbox: boolean // チェックボックスの表示/非表示
-  isChecked: boolean // チェックボックスの状態（親から管理）
+  showCheckbox: boolean
+  isChecked: boolean
 }
 
 const ImageCheckbox: React.FC<Gallery> = ({
