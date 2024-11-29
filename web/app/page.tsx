@@ -1,4 +1,3 @@
-// page.tsx
 'use client'
 import Button from '@/components/button'
 import Card from '@/components/card'
@@ -8,6 +7,8 @@ import Message from '@/components/message'
 import { cognitoUserPool } from '@/utils/cognito'
 import { AuthenticationDetails, CognitoUser } from 'amazon-cognito-identity-js'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation' // 修正: useRouter のインポート
 import React, { useState } from 'react'
 
 export default function Home() {
@@ -15,6 +16,8 @@ export default function Home() {
   const [isValidEmail, setIsValidEmail] = useState<boolean | null>(null)
   const [isValidPassword, setIsValidPassword] = useState<boolean | null>(null)
   const [password, setPassword] = useState<string>('')
+
+  const router = useRouter() // 修正: useRouter フックの使用
 
   const emailChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -53,6 +56,8 @@ export default function Home() {
           alert('ログイン成功！')
           console.log('Access Token:', accessToken)
           console.log('ID Token:', idToken)
+
+          router.push('/media') // 修正: 成功時に /media に遷移
         },
         onFailure: (err) => {
           console.error('ログイン失敗:', err)
@@ -125,9 +130,9 @@ export default function Home() {
               isError={isValidPassword === false}
             />
           </div>
-          <a href="#" className="text-[#1E9A9A] text-xs px-3 pt-3 pb-14">
+          <Link href={'#'} className="text-[#1E9A9A] text-xs px-3 pt-3 pb-14">
             ＞パスワードをお忘れの方はこちら
-          </a>
+          </Link>
           <Button
             onClick={handleLogin}
             padding={{ x: 20, y: 8 }}
