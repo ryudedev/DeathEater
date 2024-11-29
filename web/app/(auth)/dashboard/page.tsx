@@ -18,7 +18,7 @@ export default function Dashboard() {
   if (error) return <p>Error: {error.message}</p>
 
   return (
-    <div className="w-screen h-screen flex flex-col gap-2">
+    <>
       <Header title="ホーム" />
       {/* 最新のカプセルの開封日を表示 */}
       <div className="p-4 flex flex-col gap-6 justify-center">
@@ -40,6 +40,6 @@ export default function Dashboard() {
           </>
         )}
       </div>
-    </div>
+    </>
   )
 }

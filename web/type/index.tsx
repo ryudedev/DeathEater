@@ -49,3 +49,8 @@ export type UserClassesWithClass = UserClasses & {
     capsules?: Capsule[]
   }
 }
+
+export type MemberItem = {
+  role: 'ADMIN' | 'LEADER' | 'MEMBER'
+  name: string
+}

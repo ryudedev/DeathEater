@@ -7,7 +7,7 @@ import { useDashboardStore } from '@/store'
 export default function Capsules() {
   const { capsules } = useDashboardStore()
   return (
-    <div className="w-screen h-screen flex flex-col gap-2">
+    <>
       <Header showBackButton title="カプセル詳細" />
       <div className="p-4 flex flex-col gap-6 justify-center">
         {capsules?.length ? (
@@ -19,6 +19,6 @@ export default function Capsules() {
           <Menu />
         </div>
       </div>
-    </div>
+    </>
   )
 }
