@@ -2,12 +2,12 @@
 import Header from '@/components/header'
 import MemberList from '@/components/memberlist'
 import { GET_MEMBER } from '@/lib/queries/histories'
-import { useUserClasses } from '@/store'
+import { useDashboardStore } from '@/store'
 import { useQuery } from '@apollo/client'
 import { useEffect, useState } from 'react'
 
 export default function Members() {
-  const { userClasses } = useUserClasses()
+  const { userClasses } = useDashboardStore()
   const [class_id, setClassId] = useState<string>()
   const [members, setMembers] = useState([])
   const { loading, error, data } = useQuery(GET_MEMBER, {
@@ -38,7 +38,7 @@ export default function Members() {
   if (error) return <div>{error.message}</div>
   return (
     <div className="w-screen h-screen flex flex-col gap-2">
-      <Header title="メンバー" />
+      <Header showBackButton title="メンバー" />
       <div className="p-4 flex flex-col gap-6 justify-center">
         {members.length ? (
           <MemberList members={members} />

@@ -2,10 +2,10 @@
 import { CapsuleStorage } from '@/components/capsuleStorage'
 import Header from '@/components/header'
 import Menu from '@/components/menu'
-import { useCapsules } from '@/store'
+import { useDashboardStore } from '@/store'
 
 export default function Capsules() {
-  const { capsules } = useCapsules()
+  const { capsules } = useDashboardStore()
   return (
     <div className="w-screen h-screen flex flex-col gap-2">
       <Header showBackButton title="カプセル詳細" />
