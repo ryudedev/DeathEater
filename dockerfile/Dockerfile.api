@@ -3,10 +3,8 @@ FROM node:22.9.0 as deps
 
 WORKDIR /api
 RUN npm i -g npm@latest pnpm@latest
-
-# 依存関係インストールのみのキャッシュ層作成
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # Step 2: Build with Prisma Client generation
 FROM node:22.9.0 as builder
@@ -16,6 +14,10 @@ RUN npm i -g pnpm@latest
 COPY . .
 COPY --from=deps /api/node_modules ./node_modules
 
+# Generate Prisma Client
+# Check if schema.prisma exists and then generate Prisma Client
+RUN if [ -f "prisma/schema.prisma" ]; then pnpm dlx prisma generate; else echo "schema.prisma not found"; fi
+
 # Prisma Clientの生成
 RUN pnpm dlx prisma generate
 
@@ -24,19 +26,25 @@ RUN pnpm build
 
 # Step 3: Production image
 FROM node:22.9.0
-
-RUN npm i -g pnpm@latest
+RUN npm i -g pnpm@latest @nestjs/cli
 WORKDIR /api
 
 COPY --from=builder /api/dist ./dist
 COPY --from=builder /api/package.json ./package.json
+COPY --from=builder /api/node_modules ./node_modules
+COPY --from=builder /api/prisma ./prisma
 COPY --from=builder /api/setup.sh ./setup.sh
 
 # Prisma Clientを含む依存関係をコピー
 COPY --from=builder /api/node_modules/@prisma ./node_modules/@prisma
 
 # Give execute permissions to setup.sh in the final stage
-RUN chmod +x ./setup.sh
+COPY --from=builder /api/setup.sh ./setup.sh
 
+# Copy Prisma Client for production
+COPY --from=builder /api/node_modules/@prisma ./node_modules/@prisma
+
+# Give execute permissions to setup.sh in the final stage
+RUN chmod +x ./setup.sh
 EXPOSE 3001
 CMD [ "pnpm", "start:prisma:debug" ]

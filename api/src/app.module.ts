@@ -6,7 +6,10 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-//import { JwtModule } from '@nestjs/jwt';
+import { CapsuleModule } from './capsule/capsule.module';
+import { SchoolModule } from './school/school.module';
+import { ClassModule } from './class/class.module';
+import { OrgModule } from './org/org.module';
 
 // 環境変数を読み込むための設定
 import * as dotenv from 'dotenv';
@@ -24,6 +27,11 @@ dotenv.config();
       autoSchemaFile: true,
       installSubscriptionHandlers: true,
     }),
+    // Capsule 機能に関連するモジュールを追加
+    CapsuleModule,
+    SchoolModule,
+    ClassModule,
+    OrgModule,
   ],
   controllers: [AppController],
   providers: [AppService],

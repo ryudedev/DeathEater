@@ -5,6 +5,8 @@ import Card from '@/components/card'
 import Input from '@/components/input'
 import Label from '@/components/label'
 import Message from '@/components/message'
+import { cognitoUserPool } from '@/utils/cognito'
+import { AuthenticationDetails, CognitoUser } from 'amazon-cognito-identity-js'
 import Image from 'next/image'
 import React, { useState } from 'react'
 
@@ -31,9 +33,32 @@ export default function Home() {
       setIsValidPassword(false)
     }
   }
+
   const handleLogin = () => {
     if (isValidEmail && isValidPassword) {
-      alert('ログイン成功！')
+      const authenticationDetails = new AuthenticationDetails({
+        Username: email,
+        Password: password,
+      })
+
+      const user = new CognitoUser({
+        Username: email,
+        Pool: cognitoUserPool,
+      })
+
+      user.authenticateUser(authenticationDetails, {
+        onSuccess: (result) => {
+          const accessToken = result.getAccessToken().getJwtToken()
+          const idToken = result.getIdToken().getJwtToken()
+          alert('ログイン成功！')
+          console.log('Access Token:', accessToken)
+          console.log('ID Token:', idToken)
+        },
+        onFailure: (err) => {
+          console.error('ログイン失敗:', err)
+          alert('ログイン失敗！')
+        },
+      })
     } else {
       alert('メールアドレスまたはパスワードが無効です')
     }
@@ -49,18 +74,8 @@ export default function Home() {
           height={60}
           className="mb-6"
         />
-        <Card
-          gap={7}
-          padding={{
-            x: 4,
-            y: 4,
-            top: 4,
-            bottom: 22,
-            left: 4,
-            right: 4,
-          }}
-        >
-          <div className="w-full flex flex-col gap-1.5">
+        <Card gap={7} className="p-1 pb-[22px]">
+          <div className="w-full flex flex-col gap-1.5 p-3">
             <Label htmlFor="email">
               メール
               <Input
@@ -86,7 +101,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="w-full flex flex-col gap-1.5">
+          <div className="w-full flex flex-col gap-1.5 p-3">
             <Label htmlFor="password">
               パスワード
               <Input
@@ -96,7 +111,7 @@ export default function Home() {
                 placeholder="パスワードを入力してください"
                 type="password"
                 onChange={passwordChangeHandler}
-                isError={false}
+                isError={isValidPassword === false}
               />
             </Label>
             <Message
@@ -107,10 +122,10 @@ export default function Home() {
                     ? ''
                     : '10文字以上で入力してください'
               }
-              isError={isValidEmail === false}
+              isError={isValidPassword === false}
             />
           </div>
-          <a href="#" className="text-[#1E9A9A] text-xs">
+          <a href="#" className="text-[#1E9A9A] text-xs px-3 pt-3 pb-14">
             ＞パスワードをお忘れの方はこちら
           </a>
           <Button
