@@ -74,6 +74,12 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
       // ApolloErrorの場合だけセット
       if (error instanceof ApolloError) {
         set({ error })
+      } else if (error.message === 'Email not found in cookies.') {
+        set({
+          error: new ApolloError({
+            errorMessage: 'Email not found in cookies.',
+          }),
+        })
       } else {
         console.error('Unexpected error:', error)
         set({
