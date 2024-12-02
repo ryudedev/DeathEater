@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -10,6 +8,7 @@ import { CapsuleModule } from './capsule/capsule.module';
 import { SchoolModule } from './school/school.module';
 import { ClassModule } from './class/class.module';
 import { OrgModule } from './org/org.module';
+import { HistoryModule } from './history/history.module';
 
 // 環境変数を読み込むための設定
 import * as dotenv from 'dotenv';
@@ -32,8 +31,7 @@ dotenv.config();
     SchoolModule,
     ClassModule,
     OrgModule,
+    HistoryModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

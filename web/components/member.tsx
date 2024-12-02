@@ -1,13 +1,13 @@
 type MemberProps = {
-  role: '管理者' | 'サブリーダー' | 'メンバー'
+  role: 'ADMIN' | 'LEADER' | 'MEMBER'
   name: string
 }
 
 export default function Member({ role, name }: MemberProps) {
   return (
-    <div className="p-2 flex flex-col">
+    <div className="p-2 flex flex-col justify-start items-start font-bold">
       <div className="text-[#BFBFBF] text-xs">{role}</div>
-      <div className="font-medium">{name}</div>
+      <div className="">{name}</div>
     </div>
   )
 }

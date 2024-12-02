@@ -1,11 +1,15 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('ROOT', 'ADMIN', 'LEADER', 'MEMBER');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
+    "cognito_id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "role" TEXT NOT NULL DEFAULT 'member',
+    "role" "Role" NOT NULL DEFAULT 'MEMBER',
+    "avatar" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -52,6 +56,7 @@ CREATE TABLE "Class" (
 CREATE TABLE "Capsule" (
     "id" TEXT NOT NULL,
     "class_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "size" TEXT NOT NULL,
     "release_date" TIMESTAMP(3) NOT NULL,
     "upload_deadline" TIMESTAMP(3) NOT NULL,
@@ -100,7 +105,9 @@ CREATE TABLE "Payment" (
 CREATE TABLE "History" (
     "id" TEXT NOT NULL,
     "capsule_id" TEXT NOT NULL,
+    "history_id" TEXT,
     "event" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -117,6 +124,9 @@ CREATE TABLE "UserClasses" (
 
     CONSTRAINT "UserClasses_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_cognito_id_key" ON "User"("cognito_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
@@ -149,7 +159,13 @@ ALTER TABLE "Stack" ADD CONSTRAINT "Stack_uploaded_by_fkey" FOREIGN KEY ("upload
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "History" ADD CONSTRAINT "History_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "History" ADD CONSTRAINT "History_capsule_id_fkey" FOREIGN KEY ("capsule_id") REFERENCES "Capsule"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "History" ADD CONSTRAINT "History_history_id_fkey" FOREIGN KEY ("history_id") REFERENCES "History"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserClasses" ADD CONSTRAINT "UserClasses_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

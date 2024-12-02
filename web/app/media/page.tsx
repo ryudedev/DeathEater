@@ -1,7 +1,9 @@
 'use client'
+import Button from '@/components/button'
 import Card from '@/components/card'
 import ImageCheckbox from '@/components/galleryt'
 import Header from '@/components/header'
+import Image from 'next/image'
 import React, { useState } from 'react'
 
 const Media: React.FC = () => {
@@ -45,6 +47,18 @@ const Media: React.FC = () => {
               />
             ))}
           </div>
+          <Button
+            // onClick={handleLogin}
+            className="absolute w-[80px] h-[80px] flex -right-6 -top-[27px] bg-[#441AFF] transition duration-300 font-semibold rounded-full px-5 py-2 items-center justify-center"
+          >
+            <Image
+              src="/trash.svg"
+              alt="Icon"
+              className="absolute mt-5 mr-5"
+              width={22}
+              height={20}
+            />
+          </Button>
         </Card>
       </div>
     </div>

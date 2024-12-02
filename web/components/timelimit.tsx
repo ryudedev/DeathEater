@@ -50,29 +50,26 @@ const TimeLimit: React.FC<TimeLimitProps> = ({ initialTime, openTime }) => {
   const { days, hours, minutes, seconds } = calculateTimeUnits(timeLeft)
 
   return (
-    <div className="p-4 flex items-center justify-center">
-      <Card bgColor="blue" className="pt-2.5 pb-2.5 pl-1 pr-1">
-        <div className="absolute w-[140px] h-[40px] bg-white -top-1 -left-1.5 flex items-center justify-center rounded-br-2xl font-bold">
-          <div className="text-xs text-[#441AFF]">
-            {isUploadPhase ? 'アップロード終了まで' : '開封まで'}
-          </div>
+    <Card bgColor="blue" className="pt-8 pb-5 pl-1 pr-1">
+      <div className="absolute -top-1 -left-1.5 flex items-center justify-center px-4 py-2 rounded-br-2xl font-bold bg-white">
+        <div className="text-xs text-[#441AFF]">
+          {isUploadPhase ? 'アップロード終了まで' : '開封まで'}
         </div>
-        <div className="flex items-center justify-center tracking-widest text-white text-4xl font-black">
-          {days > 0 ? (
-            <>
-              {days}
-              <div className="text-sm pt-2.5">日　　</div> {hours}：{minutes}
-            </>
-          ) : (
-            <>
-              {String(hours).padStart(2, '0')}：
-              {String(minutes).padStart(2, '0')}：
-              {String(seconds).padStart(2, '0')}
-            </>
-          )}
-        </div>
-      </Card>
-    </div>
+      </div>
+      <div className="flex items-center justify-center tracking-widest text-white text-4xl font-black">
+        {days > 0 ? (
+          <>
+            {days}
+            <div className="text-sm pt-2.5">日　　</div> {hours}：{minutes}
+          </>
+        ) : (
+          <>
+            {String(hours).padStart(2, '0')}：{String(minutes).padStart(2, '0')}
+            ：{String(seconds).padStart(2, '0')}
+          </>
+        )}
+      </div>
+    </Card>
   )
 }
 

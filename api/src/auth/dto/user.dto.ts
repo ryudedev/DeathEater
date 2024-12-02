@@ -1,4 +1,6 @@
 import { ObjectType, Field } from '@nestjs/graphql';
+import { StackOutput } from './stack.output';
+import { UserClassesOutput } from './UserClasses.Output';
 
 @ObjectType()
 export class UserDto {
@@ -6,14 +8,32 @@ export class UserDto {
   id: string;
 
   @Field()
+  cognito_id: string;
+
+  @Field({ nullable: true })
+  avatar?: string;
+
+  @Field()
   email: string;
 
-  @Field({ nullable: true })
-  lastName?: string;
+  @Field()
+  lastName: string;
 
-  @Field({ nullable: true })
-  firstName?: string;
+  @Field()
+  firstName: string;
 
   @Field()
   role: string;
+
+  @Field()
+  created_at: Date;
+
+  @Field()
+  updated_at: Date;
+
+  @Field(() => [StackOutput], { nullable: true })
+  stacks?: StackOutput[];
+
+  @Field(() => [UserClassesOutput], { nullable: true })
+  userClasses?: UserClassesOutput[];
 }
