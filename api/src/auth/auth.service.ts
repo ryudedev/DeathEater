@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
 import { UserDto } from './dto/user.dto';
@@ -119,5 +120,34 @@ export class AuthService {
     });
 
     return updatedUser;
+  }
+
+  //ユーザーの削除メソッド
+  async deleteUserById(userId: string): Promise<void> {
+    try {
+      //ユーザー存在確認
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException({
+          code: 404,
+          message: 'No matching data found.',
+        });
+      }
+      //ユーザーの削除
+      await this.prisma.user.delete({
+        where: { id: userId },
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException({
+        code: 500,
+        message: 'A server error occurred.',
+      });
+    }
   }
 }

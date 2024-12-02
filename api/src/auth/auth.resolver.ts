@@ -4,6 +4,12 @@ import { AuthDto } from './dto/auth.dto';
 import { UpdateUserResponse } from './dto/update-user-response.dto';
 import { UserDto } from './dto/user.dto';
 import { MemberItemOutput } from './dto/member-item.output';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 
 @Resolver()
 export class AuthResolver {
@@ -17,14 +23,32 @@ export class AuthResolver {
 
   @Mutation(() => UserDto)
   async signUp(@Args('authDto') authDto: AuthDto): Promise<UserDto> {
-    // サインアップ処理を呼び出し、アクセストークンを返す
-    return await this.authService.signUp(authDto);
+    try {
+      // サインアップ処理を呼び出し、アクセストークンを返す
+      return await this.authService.signUp(authDto);
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code == 'P2002') {
+          throw new BadRequestException('Email already exists.');
+        }
+      }
+      throw new InternalServerErrorException('An unexpected error occurred.');
+    }
   }
 
   @Query(() => UserDto)
   async findUserByEmail(@Args('email') email: string): Promise<UserDto> {
-    // メールアドレスでユーザーを検索
-    return await this.authService.findUserByEmail(email);
+    try {
+      // メールアドレスでユーザーを検索
+      return await this.authService.findUserByEmail(email);
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code == 'P2001') {
+          throw new NotFoundException('User not found.');
+        }
+      }
+      throw new InternalServerErrorException('An unexpected error occurred.');
+    }
   }
 
   // メンバー一覧を取得するQuery
@@ -32,7 +56,11 @@ export class AuthResolver {
   async getMemberList(
     @Args('class_id') class_id: string,
   ): Promise<MemberItemOutput[]> {
-    return await this.authService.getMemberList(class_id);
+    try {
+      return await this.authService.getMemberList(class_id);
+    } catch {
+      throw new InternalServerErrorException('Failed to fetch member list.');
+    }
   }
 
   // メールアドレスとパスワードを更新するMutation
@@ -41,16 +69,39 @@ export class AuthResolver {
     @Args('id') id: string,
     @Args('newEmail') newEmail: string,
   ): Promise<UpdateUserResponse> {
-    // AuthServiceのupdateEmailPasswordメソッドを呼び出す
-    const updatedUser = await this.authService.updateEmailPassword(
-      id,
-      newEmail,
-    );
+    try {
+      // AuthServiceのupdateEmailPasswordメソッドを呼び出す
+      const updatedUser = await this.authService.updateEmailPassword(
+        id,
+        newEmail,
+      );
 
-    // 更新結果を返す
-    return {
-      id: updatedUser.id,
-      email: updatedUser.email,
-    };
+      // 更新結果を返す
+      return {
+        id: updatedUser.id,
+        email: updatedUser.email,
+      };
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code == 'P2002') {
+          throw new BadRequestException('Email already in use.');
+        }
+      }
+      throw new InternalServerErrorException('An unexpected error occurred.');
+    }
+  }
+
+  @Mutation(() => Boolean, { description: 'Delete a user by ID' })
+  async deleteUser(@Args('id') id: string): Promise<boolean> {
+    try {
+      await this.authService.deleteUserById(id);
+      console.log('削除に成功しました。');
+      return true;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw new NotFoundException('User not found.');
+      }
+    }
+    throw new InternalServerErrorException('Failed to delete user.');
   }
 }

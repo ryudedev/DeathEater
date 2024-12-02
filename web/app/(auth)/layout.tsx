@@ -10,6 +10,6 @@ export default function AuthLayout({ children }: LayoutProps) {
   const { setInit } = useDashboardStore()
   useEffect(() => {
     setInit()
-  }, [])
+  }, [setInit])
   return <div className="w-screen h-screen flex flex-col gap-2">{children}</div>
 }
