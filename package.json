@@ -52,6 +52,7 @@
     }
   },
   "dependencies": {
+    "aws-sdk": "^2.1692.0",
     "express": "^4.21.0",
     "typescript": "^5.5",
     "zx": "^8.1.8"
