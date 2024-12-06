@@ -11,16 +11,22 @@
   },
   "dependencies": {
     "@apollo/client": "^3.11.8",
+    "@aws-amplify/ui-react": "^6.7.0",
+    "amazon-cognito-identity-js": "^6.3.12",
+    "axios": "^1.7.7",
     "graphql": "^16.9.0",
     "graphql-ws": "^5.16.0",
     "next": "14.2.15",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "zustand": "^5.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^8.14.0",
+    "@typescript-eslint/parser": "^8.14.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.15",
     "eslint-config-prettier": "^9.1.0",

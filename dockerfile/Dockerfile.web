@@ -1,33 +1,38 @@
-# Next.js
+# Step 1: Dependency installation
 FROM node:22.9.0 as deps
 
-# Create app directory
+# 作業ディレクトリ作成
 WORKDIR /web
-# Install global dependencies
 RUN npm i -g npm@latest pnpm@latest
-# Copy only package.json and pnpm-lock.yaml for caching dependency layers
-COPY package.json ./
-# Install dependencies
+
+# 依存関係インストールのみのキャッシュ層作成
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
+# Step 2: Build the application
 FROM node:22.9.0 as builder
 
 WORKDIR /web
-# Install pnpm in builder stage
 RUN npm i -g pnpm@latest
-# Copy the rest of the application code
+# ソースコードと依存関係のコピー
 COPY . .
 COPY --from=deps /web/node_modules ./node_modules
+# アプリケーションのビルド
 RUN pnpm build
 
+# Step 3: Production image
 FROM node:22.9.0
+
 WORKDIR /web
+ENV NODE_ENV development
+RUN npm i -g pnpm@latest
+
+# ビルド済みのアプリケーションをコピー
 ENV NODE_ENV development
 # Copy the necessary build output
 COPY --from=builder /web/public ./public
 COPY --from=builder /web/.next ./.next
 COPY --from=builder /web/package.json ./package.json
-# Install pnpm in final stage
-RUN npm i -g pnpm@latest
+
 EXPOSE 3000
 CMD [ "pnpm", "dev" ]

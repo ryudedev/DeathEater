@@ -1,4 +1,5 @@
 import CustomApolloProvider from '@/components/providers/customApolloProvider'
+import '@aws-amplify/ui-react/styles.css'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,7 +7,217 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  // 学校管理者
+  ROOT
+  // クラスの管理者
+  ADMIN
+  // クラス代表者
+  LEADER
+  // 一般ユーザー
+  MEMBER
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  // プライマリキー、cuid()によるユニークID
+  id         String   @id @default(cuid())
+  // CognitoのユーザーID
+  cognito_id String   @unique
+  // メールアドレス
+  email      String   @unique
+  // ユーザーの苗字
+  lastName   String
+  // ユーザーの名前
+  firstName  String
+  // ロール(デフォルト：member)
+  role       Role   @default(MEMBER)
+  // ユーザーのプロフィール画像
+  avatar    String?
+  // 作成日時
+  created_at DateTime @default(now())
+  // 更新日時
+  updated_at DateTime @updatedAt
+
+  stacks      Stack[]
+  userClasses UserClasses[]
+  histories   History[]
+}
+
+model Organization {
+  // 自動インクリメントのプライマリキー
+  id                  String    @id @default(cuid())
+  // 組織名
+  name                String
+  // 住所
+  address             String
+  // 登録番号
+  registration_number String    @unique
+  // 作成日時
+  created_at          DateTime  @default(now())
+  // 更新日時
+  updated_at          DateTime  @updatedAt
+  // 複数のSchoolとリレーション
+  schools             School[]
+  payments            Payment[]
+}
+
+model School {
+  // 自動インクリメントのプライマリキー
+  id                         String   @id @default(cuid())
+  // 学校名
+  name                       String
+  // Organizationとの関連ID
+  organization_id            String
+  // 学校登録番号
+  school_registration_number String   @unique
+  // 学校住所
+  address                    String
+  // 作成日時
+  created_at                 DateTime @default(now())
+  // 更新日時
+  updated_at                 DateTime @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id])
+  // 複数のClassとリレーション
+  classes      Class[]
+}
+
+model Class {
+  // 自動インクリメントのプライマリキー
+  id         String   @id @default(cuid())
+  // クラス名
+  name       String
+  // schoolとの関連ID
+  school_id  String
+  // 作成日時
+  created_at DateTime @default(now())
+  // 更新日時
+  updated_at DateTime @updatedAt
+
+  school      School        @relation(fields: [school_id], references: [id])
+  // 複数のCapsuleとリレーション
+  capsules    Capsule[]
+  // 複数のUserClassesとリレーション
+  userClasses UserClasses[]
+}
+
+model Capsule {
+  // 自動インクリメントのプライマリキー
+  id              String   @id @default(cuid())
+  // Classとの関連ID
+  class_id        String
+  // カプセルの名前
+  name            String
+  // カプセルのサイズ
+  size            String
+  // カプセルを開封する日付
+  release_date    DateTime
+  // アップロード期限
+  upload_deadline DateTime
+  // 作成日時
+  created_at      DateTime @default(now())
+  // 更新日時
+  updated_at      DateTime @updatedAt
+
+  class     Class     @relation(fields: [class_id], references: [id])
+  // Capsuleが複数のStackを持つリレーション
+  stacks    Stack[]
+  // Capsuleが複数のHistoryを持つリレーション
+  histories History[]
+  // Capsuleが複数のMediaを持つリレーション
+  media     Media[]
+}
+
+model Media {
+  // 自動インクリメントのプライマリキー
+  id         String @id @default(cuid())
+  // Capsuleとの関連ID
+  capsule_id String
+  // ファイルパス(例: "s3://bucket/media/file.mp4")
+  file_path  String
+  // ファイルタイプ(例: "video")
+  file_type  String
+
+  capsule Capsule @relation(fields: [capsule_id], references: [id])
+}
+
+model Stack {
+  // 自動インクリメントのプライマリキー
+  id          String   @id @default(cuid())
+  // Capsuleとの関連ID
+  capsule_id  String
+  // ファイルパス
+  file_path   String
+  // アップロードユーザーID
+  uploaded_by String
+  // 作成日時
+  created_at  DateTime @default(now())
+  // 更新日時
+  updated_at  DateTime @updatedAt
+
+  capsule Capsule @relation(fields: [capsule_id], references: [id])
+  user    User    @relation(fields: [uploaded_by], references: [id])
+}
+
+model Payment {
+  // 自動インクリメントのプライマリキー
+  id              String   @id @default(cuid())
+  // Organizationモデルのidを参照する外部キー
+  organization_id String
+  // 支払額を表すフィールド
+  amount          Float
+  // 支払が行われた日付
+  payment_date    String
+  // 支払の有効期限
+  duration        String
+  // 作成日時
+  created_at      DateTime @default(now())
+  // 更新日時
+  updated_at      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id])
+}
+
+model History {
+  // 自動インクリメントのプライマリキー
+  id         String   @id @default(cuid())
+  // Capsuleモデルのidの参照キー
+  capsule_id String
+  // イベント許可拒否のフィールド（外部キーとして設定）
+  history_id String?
+  // イベントの内容を記録するフィールド（例: "Media added"）
+  event      String
+  // ユーザーのID
+  user_id    String
+  // 作成日時
+  created_at DateTime @default(now())
+  // 更新日時
+  updated_at DateTime @updatedAt
+
+  user    User    @relation(fields: [user_id], references: [id])
+  capsule Capsule @relation(fields: [capsule_id], references: [id])
+
+  // history_idが参照する外部キー（他のHistoryレコードを参照する場合）
+  history   History? @relation("HistoryHistory", fields: [history_id], references: [id])
+
+  // 逆方向のリレーション
+  historyRelations History[] @relation("HistoryHistory")
+}
+
+
+
+model UserClasses {
+  // 自動インクリメントのプライマリキー
+  id         String   @id @default(cuid())
+  // Userモデルのidを参照する外部キー
+  user_id    String
+  // Classモデルのidを参照する外部キー
+  class_id   String
+  // 作成日時
+  created_at DateTime @default(now())
+  // 更新日時
+  updated_at DateTime @updatedAt
+
+  user  User  @relation(fields: [user_id], references: [id])
+  class Class @relation(fields: [class_id], references: [id])
 }

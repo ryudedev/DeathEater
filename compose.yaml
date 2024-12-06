@@ -26,6 +26,7 @@ services:
       - ./api:/api
     environment:
       - NODE_ENV=development
+      - POSTGRES_USER=deatheater
     networks:
       - app-network
     depends_on:
@@ -41,34 +42,16 @@ services:
     networks:
       - app-network
 
-  swagger-editor:
-    image: swaggerapi/swagger-editor
-    container_name: "swagger-editor"
-    ports:
-      - "8001:8080"
-    depends_on:
-      - api
-
   swagger-ui:
     image: swaggerapi/swagger-ui
     container_name: "swagger-ui"
+    platform: linux/amd64  # 追加
     ports:
       - "8002:8080"
     volumes:
       - ./docs/openapi.yaml:/docs/openapi.yaml
     environment:
       SWAGGER_JSON: /docs/openapi.yaml
-    depends_on:
-      - api
-
-  swagger-api:
-    image: stoplight/prism:3
-    container_name: "swagger-api"
-    ports:
-      - "8003:4010"
-    command: mock -h 0.0.0.0 /docs/openapi.yaml
-    volumes:
-      - ./docs/openapi.yaml:/docs/openapi.yaml
     depends_on:
       - api
 
