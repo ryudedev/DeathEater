@@ -7,26 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  // 学校管理者
+  ROOT
+  // クラスの管理者
+  ADMIN
+  // クラス代表者
+  LEADER
+  // 一般ユーザー
+  MEMBER
+}
+
 model User {
   // プライマリキー、cuid()によるユニークID
   id         String   @id @default(cuid())
+  // CognitoのユーザーID
+  cognito_id String   @unique
   // メールアドレス
   email      String   @unique
   // ユーザーの苗字
   lastName   String
   // ユーザーの名前
   firstName  String
-  // ハッシュ化されたパスワード
-  password   String
-  // ロール(デフォルト：member)                   
-  role       String   @default("member")
+  // ロール(デフォルト：member)
+  role       Role   @default(MEMBER)
+  // ユーザーのプロフィール画像
+  avatar    String?
   // 作成日時
   created_at DateTime @default(now())
-  // 更新日時 
+  // 更新日時
   updated_at DateTime @updatedAt
 
   stacks      Stack[]
   userClasses UserClasses[]
+  histories   History[]
 }
 
 model Organization {
@@ -92,9 +106,11 @@ model Capsule {
   id              String   @id @default(cuid())
   // Classとの関連ID
   class_id        String
+  // カプセルの名前
+  name            String
   // カプセルのサイズ
   size            String
-  // カプセルを作成した日
+  // カプセルを開封する日付
   release_date    DateTime
   // アップロード期限
   upload_deadline DateTime
@@ -167,15 +183,28 @@ model History {
   id         String   @id @default(cuid())
   // Capsuleモデルのidの参照キー
   capsule_id String
+  // イベント許可拒否のフィールド（外部キーとして設定）
+  history_id String?
   // イベントの内容を記録するフィールド（例: "Media added"）
   event      String
+  // ユーザーのID
+  user_id    String
   // 作成日時
   created_at DateTime @default(now())
   // 更新日時
   updated_at DateTime @updatedAt
 
+  user    User    @relation(fields: [user_id], references: [id])
   capsule Capsule @relation(fields: [capsule_id], references: [id])
+
+  // history_idが参照する外部キー（他のHistoryレコードを参照する場合）
+  history   History? @relation("HistoryHistory", fields: [history_id], references: [id])
+
+  // 逆方向のリレーション
+  historyRelations History[] @relation("HistoryHistory")
 }
+
+
 
 model UserClasses {
   // 自動インクリメントのプライマリキー

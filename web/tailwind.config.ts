@@ -18,6 +18,7 @@ const config: Config = {
         movie: 'var(--movie)',
         voice: 'var(--voice)',
         text: 'var(--text)',
+        free: 'var(--free)',
         border: 'var(--border)',
         ring: 'var(--ring)',
       },
@@ -32,6 +33,15 @@ const config: Config = {
       },
       gap: {
         '7': '28px',
+      },
+      keyframes: {
+        grow: {
+          '0%': { width: '0%' },
+          '100%': { width: 'var(--bar-width)' }, // 動的な幅に対応
+        },
+      },
+      animation: {
+        grow: 'grow 1.5s ease-out forwards',
       },
     },
   },
