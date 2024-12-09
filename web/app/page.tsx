@@ -3,6 +3,7 @@ import Button from '@/components/button'
 import Card from '@/components/card'
 import Input from '@/components/input'
 import Label from '@/components/label'
+import MediaAdd from '@/components/mediaAdd'
 import Message from '@/components/message'
 import axios from 'axios'
 import Image from 'next/image'
@@ -104,6 +105,7 @@ export default function Home() {
 
   return (
     <div>
+      <MediaAdd />
       <div className="h-screen w-screen flex flex-col gap-9 p-4 items-center justify-center bg-white">
         <Image
           src="/reminico.svg"
