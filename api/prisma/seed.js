@@ -128,6 +128,23 @@ async function main() {
       });
     }
 
+    const generateRandomString = (length) => {
+      const characters =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const charactersLength = characters.length;
+      let result = '';
+
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength),
+        );
+      }
+
+      return result;
+    };
+
+    const capsuleURL = [generateRandomString(16), generateRandomString(16)];
+
     // Capsuleの作成
     const capsulesData = [
       {
@@ -135,6 +152,7 @@ async function main() {
         class_id: school.classes[1]?.id, // クラスID
         size: 'small',
         release_date: new Date('2030-01-01T00:00:00.000Z'),
+        url: capsuleURL[0],
         upload_deadline: new Date('2029-12-31T00:00:00.000Z'),
       },
       {
@@ -142,6 +160,7 @@ async function main() {
         class_id: school2.classes[0]?.id, // クラスID
         size: 'medium',
         release_date: new Date('2031-03-01T00:00:00.000Z'),
+        url: capsuleURL[1],
         upload_deadline: new Date('2031-02-28T00:00:00.000Z'),
       },
     ];

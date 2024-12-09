@@ -106,7 +106,7 @@ export default function Home() {
     <div>
       <div className="h-screen w-screen flex flex-col gap-9 p-4 items-center justify-center bg-white">
         <Image
-          src="/reminico.svg"
+          src="/images/reminico.svg"
           alt="Icon"
           width={177}
           height={60}
@@ -171,7 +171,12 @@ export default function Home() {
               className="absolute px-5 py-2 w-[80px] h-[80px] flex items-start justify-start -right-6 -bottom-[27px] bg-[#441AFF] transition duration-300 font-semibold rounded-full"
               type="submit"
             >
-              <Image src="/Login.svg" alt="Icon" width={22} height={20} />
+              <Image
+                src="/images/Login.svg"
+                alt="Icon"
+                width={22}
+                height={20}
+              />
             </Button>
           </form>
         </Card>

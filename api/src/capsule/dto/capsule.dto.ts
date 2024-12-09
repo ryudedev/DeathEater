@@ -18,6 +18,9 @@ export class CapsuleDto {
   release_date: Date;
 
   @Field()
+  url: string;
+
+  @Field()
   upload_deadline: Date;
 
   @Field()

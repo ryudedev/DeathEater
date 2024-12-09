@@ -19,3 +19,7 @@ export const calculateDateDifference = (targetDate: Date): string => {
 
   return `${years}年${days}日`
 }
+
+export const isDateReached = (targetDate: string): boolean => {
+  return new Date() >= new Date(targetDate)
+}

@@ -53,7 +53,7 @@ export default function Input<T = string>({
           onClick={togglePasswordVisibility}
         >
           <Image
-            src={showPassword ? '/eye-off.svg' : '/eye.svg'}
+            src={showPassword ? '/images/eye-off.svg' : '/images/eye.svg'}
             alt={showPassword ? 'Hide password' : 'Show password'}
             width={20}
             height={20}

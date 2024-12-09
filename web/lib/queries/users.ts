@@ -22,6 +22,7 @@ export const GET_USER = gql`
             name
             size
             release_date
+            url
             upload_deadline
           }
         }

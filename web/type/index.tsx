@@ -36,6 +36,7 @@ export type Capsule = {
   size?: number
   release_date?: Date
   upload_deadline?: Date
+  url: string
   created_at?: Date
   updated_at?: Date
 }
@@ -50,7 +51,9 @@ export type UserClassesWithClass = UserClasses & {
   }
 }
 
+export type Roles = 'ADMIN' | 'LEADER' | 'MEMBER'
+
 export type MemberItem = {
-  role: 'ADMIN' | 'LEADER' | 'MEMBER'
+  role: Roles
   name: string
 }

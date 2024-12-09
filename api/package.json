@@ -28,6 +28,8 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.13",
+    "@nestjs/websockets": "^10.4.13",
     "@prisma/client": "5.21.1",
     "apollo-server-core": "^3.13.0",
     "bcryptjs": "^2.4.3",
@@ -39,8 +41,11 @@
     "graphql-subscriptions": "^2.0.0",
     "graphql-tools": "^9.0.2",
     "passport-jwt": "^4.0.1",
+    "peerjs": "^1.5.4",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "simple-peer": "^9.11.1",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

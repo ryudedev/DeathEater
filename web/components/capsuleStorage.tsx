@@ -37,7 +37,11 @@ export const CapsuleStorage = ({ capsules, type }: CapsuleStorageProps) => {
         onClick={onClick}
       >
         <Image
-          src={type === 'transition' ? '/arrow-right-white.svg' : '/Plus.svg'}
+          src={
+            type === 'transition'
+              ? '/images/arrow-right-white.svg'
+              : '/images/Plus.svg'
+          }
           alt="next page"
           width={24}
           height={24}
@@ -46,7 +50,7 @@ export const CapsuleStorage = ({ capsules, type }: CapsuleStorageProps) => {
       </Button>
       <div className="flex-1 flex px-2.5 py-2.5 justify-center">
         <Image
-          src="/Capsule.svg"
+          src="/images/Capsule.svg"
           alt="Capsule"
           width={148}
           height={61}

@@ -114,6 +114,8 @@ model Capsule {
   release_date    DateTime
   // アップロード期限
   upload_deadline DateTime
+  // 配信URL
+  url             String?
   // 作成日時
   created_at      DateTime @default(now())
   // 更新日時
