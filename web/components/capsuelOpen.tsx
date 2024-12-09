@@ -2,6 +2,7 @@
 
 import { useDashboardStore } from '@/store'
 import { DotLottie, DotLottieReact } from '@lottiefiles/dotlottie-react'
+import { useRouter } from 'next/navigation'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import io, { Socket } from 'socket.io-client'
 
@@ -28,6 +29,7 @@ export default function CapsuleOpen({
   const { user } = useDashboardStore()
   const initialTouchY = useRef<number | null>(null)
   const socketRef = useRef<Socket | null>(null)
+  const router = useRouter()
 
   // Lottie関連のコールバック
   const dotLottieRefCallback = useCallback(
@@ -86,26 +88,29 @@ export default function CapsuleOpen({
       process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001',
       {
         query: {
-          user: user?.id as string, // user.id をクエリパラメータとして送る
+          user: user?.id as string,
         },
       },
     )
     socketRef.current = socket
 
-    // WebSocket接続時
-    socket.on('connect', () => console.log('Connected to WebSocket server'))
-
-    // 状態更新を受信
+    // サーバーからの状態更新を受信
     socket.on('stateUpdate', (state: CapsuleState[]) => {
-      console.log('State update received from server:', state) // ログを追加
+      console.log('State update received from server:', state)
       setCapsuleStates(state)
+    })
+
+    // サーバーからのリダイレクト指示を受信
+    socket.on('redirect', ({ url }: { url: string }) => {
+      console.log(`Redirecting to ${url}`)
+      router.push(url) // `/live/view` に遷移
     })
 
     // クリーンアップ
     return () => {
       socket.disconnect()
     }
-  }, [user])
+  }, [user?.id, router])
 
   return !isOpen ? (
     <div

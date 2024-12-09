@@ -87,6 +87,16 @@ export class CapsuleGateway
 
     // 更新された状態を全クライアントに送信
     this.broadcastState();
+
+    // 全員がスライド済みか確認
+    const allOpened = this.capsuleStates.every((entry) => entry.isOpened);
+
+    if (allOpened) {
+      console.log(
+        'All users have opened their capsules. Redirecting to /live/view',
+      );
+      this.server.emit('redirect', { url: '/live/view' }); // 全クライアントにリダイレクト指示
+    }
   }
 
   private broadcastState() {
