@@ -53,6 +53,8 @@
   },
   "dependencies": {
     "express": "^4.21.0",
+    "graphql-upload": "^17.0.0",
+    "multer": "1.4.5-lts.1",
     "typescript": "^5.5",
     "zx": "^8.1.8"
   },
