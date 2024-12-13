@@ -217,6 +217,41 @@ async function main() {
       }
     }
 
+    const mediaData = [
+      {
+        capsule_id: smallCapsuleId, // smallサイズのカプセルに関連付け
+        file_path:
+          '/Users/shuto/Desktop/2025年度Study/DeathEater/api/src/media/sample-image/レクサスUXステアリング.jpg',
+        file_type: 'image',
+      },
+    ];
+
+    for (const media of mediaData) {
+      try {
+        // ファイルタイプのバリデーション
+        const allowedFileTypes = ['image']; // 使用するのは画像のみ
+        if (!allowedFileTypes.includes(media.file_type)) {
+          console.error(
+            `Invalid file type for media: ${media.file_type}. Skipping...`,
+          );
+          continue;
+        }
+
+        // 重複チェックを含めたデータ生成
+        await prisma.media.upsert({
+          where: { file_path: media.file_path }, // ファイルパスで一意性を確認
+          update: {}, // 更新は行わない
+          create: media, // 新規作成
+        });
+
+        console.log(`Media file added: ${media.file_path}`);
+      } catch (error) {
+        console.error(
+          `Failed to process media file (${media.file_path}): ${error.message}`,
+        );
+      }
+    }
+
     console.log('Seed completed successfully.');
   } catch (error) {
     console.error('Error during seed:', error);
