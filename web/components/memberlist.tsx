@@ -3,7 +3,7 @@ import Card from './card'
 import Member from './member'
 
 type MemberItem = {
-  role: '管理者' | 'サブリーダー' | 'メンバー'
+  role: 'ADMIN' | 'LEADER' | 'MEMBER'
   name: string
 }
 
@@ -13,16 +13,16 @@ type MemberListProps = {
 
 function RoleIcon({ role }: { role: MemberItem['role'] }) {
   const roleToSrc = {
-    管理者: '/leader.svg',
-    サブリーダー: '/subleader.svg',
-    メンバー: '/member.svg',
+    ADMIN: '/leader.svg',
+    LEADER: '/subleader.svg',
+    MEMBER: '/member.svg',
   }
   return <Image src={roleToSrc[role]} alt={role} width={50} height={50} />
 }
 const roleToPhoto: Record<MemberItem['role'], JSX.Element> = {
-  管理者: <RoleIcon role="管理者" />,
-  サブリーダー: <RoleIcon role="サブリーダー" />,
-  メンバー: <RoleIcon role="メンバー" />,
+  ADMIN: <RoleIcon role="ADMIN" />,
+  LEADER: <RoleIcon role="LEADER" />,
+  MEMBER: <RoleIcon role="MEMBER" />,
 }
 
 export default function MemberList({ members }: MemberListProps) {
@@ -36,7 +36,7 @@ export default function MemberList({ members }: MemberListProps) {
       acc[member.role].push(member)
       return acc
     },
-    { 管理者: [], サブリーダー: [], メンバー: [] },
+    { ADMIN: [], LEADER: [], MEMBER: [] },
   )
 
   return (

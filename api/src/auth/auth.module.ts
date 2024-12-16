@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './jwt.strategy';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { JwtStrategy } from './jwt.strategy';
         expiresIn: '1h',
       },
     }),
+    PrismaModule,
   ],
   // プロバイダーとエクスポートの設定
   providers: [AuthService, AuthResolver, JwtStrategy],

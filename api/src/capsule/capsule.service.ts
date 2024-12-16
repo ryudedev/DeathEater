@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateCapsuleInput } from './dto/create-capsule.input';
 //import { AuthService } from '../auth/auth.service';
 
 @Injectable()
@@ -11,40 +12,31 @@ export class CapsuleService {
    * @param data - カプセル作成に必要なデータ
    * @returns 作成されたカプセルの情報
    */
-  async createCapsule(data: {
-    classId: string;
-    size: string;
-    releaseDate: Date;
-    uploadDeadline: Date;
-  }) {
-    const { classId, size, releaseDate, uploadDeadline } = data;
+  async createCapsule(createCapsuleInput: CreateCapsuleInput) {
+    const { name, class_id, size, release_date, upload_deadline } =
+      createCapsuleInput;
 
     // Class ID の存在確認
     const classExists = await this.prisma.class.findUnique({
-      where: { id: classId },
+      where: { id: class_id },
     });
 
     if (!classExists) {
-      throw new NotFoundException(`Class with ID ${classId} not found`);
+      throw new NotFoundException(`Class with ID ${class_id} not found`);
     }
 
     // 新しいカプセルの作成
     const newCapsule = await this.prisma.capsule.create({
       data: {
-        class_id: classId,
+        name,
+        class_id,
         size,
-        release_date: releaseDate,
-        upload_deadline: uploadDeadline,
+        release_date,
+        upload_deadline,
       },
     });
 
-    return {
-      id: newCapsule.id,
-      classId: newCapsule.class_id,
-      size: newCapsule.size,
-      releaseDate: newCapsule.release_date,
-      uploadDeadline: newCapsule.upload_deadline,
-    };
+    return newCapsule;
   }
 
   /**

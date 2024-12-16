@@ -9,25 +9,25 @@ const Menu: React.FC = () => {
     {
       iconSrc: '/document.svg',
       title: 'ログ',
-      arrowSrc: '/arrow-right-b.svg',
+      arrowSrc: '/arrow-right-blue.svg',
       link: '/log',
     },
     {
       iconSrc: '/gallery.svg',
       title: 'メディア一覧',
-      arrowSrc: '/arrow-right-b.svg',
+      arrowSrc: '/arrow-right-blue.svg',
       link: '/media',
     },
     {
       iconSrc: '/two-user.svg',
       title: 'メンバー',
-      arrowSrc: '/arrow-right-b.svg',
+      arrowSrc: '/arrow-right-blue.svg',
       link: '/members',
     },
     {
       iconSrc: '/box.svg',
       title: '容量',
-      arrowSrc: '/arrow-right-b.svg',
+      arrowSrc: '/arrow-right-blue.svg',
       link: '/storage',
     },
   ]

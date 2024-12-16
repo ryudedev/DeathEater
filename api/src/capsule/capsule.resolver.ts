@@ -28,9 +28,9 @@ export class CapsuleResolver {
 
   // カプセルを作成するMutation
   @Mutation(() => CapsuleDto)
-  createCapsule(
+  async createCapsule(
     @Args('createCapsuleInput') input: CreateCapsuleInput,
   ): Promise<CapsuleDto> {
-    return this.capsuleService.createCapsule(input);
+    return await this.capsuleService.createCapsule(input);
   }
 }

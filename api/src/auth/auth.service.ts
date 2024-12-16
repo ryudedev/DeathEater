@@ -2,18 +2,16 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { AuthDto } from './dto/auth.dto';
-import { PrismaClient, Role } from '@prisma/client';
 import { UserDto } from './dto/user.dto';
-
-// Prisma Client のインスタンスを作成
-const prisma = new PrismaClient();
+import { PrismaService } from 'src/prisma/prisma.service';
+import { MemberItemOutput } from './dto/member-item.output';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   // 新規ユーザー登録メソッド
   async signUp(authDto: AuthDto): Promise<UserDto> {
@@ -21,7 +19,7 @@ export class AuthService {
     const { email, lastName, firstName, role, cognito_id } = authDto;
 
     // データベースに新規ユーザー登録
-    const newUser = await prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data: {
         email,
         lastName,
@@ -36,16 +34,33 @@ export class AuthService {
   }
 
   // ユーザーをメールアドレスで検索するメソッド
-  async findUserByEmail(email: string) {
-    // データベースからユーザーを取得
-    return await prisma.user.findUnique({
+  async findUserByEmail(email: string): Promise<UserDto> {
+    const user = await this.prisma.user.findUnique({
       where: { email },
+      include: {
+        userClasses: {
+          include: {
+            class: {
+              include: {
+                capsules: true,
+              },
+            },
+          },
+        },
+      },
     });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // DTO にマッピング
+    return user;
   }
 
   // IDでユーザーを検索するメソッド
   async findUserById(id: string) {
-    const user = await prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
     });
 
@@ -57,46 +72,29 @@ export class AuthService {
   }
 
   // メンバー一覧を取得するメソッド
-  async getMemberList() {
-    // データベースから全ユーザーを取得
-    const users = await prisma.user.findMany({
-      select: {
-        firstName: true,
-        lastName: true,
-        role: true,
+  async getMemberList(class_id: string): Promise<MemberItemOutput[]> {
+    const users = await this.prisma.userClasses.findMany({
+      where: { class_id },
+      include: {
+        user: true, // User情報を取得
       },
     });
 
-    // ユーザーを役割ごとに分類
-    const groupedMembers = {
-      admin: [],
-      leader: [],
-      member: [],
-    };
+    // ユーザー情報をロールに関係なく、MemberItem形式で1つの配列に格納
+    const memberItems = users.map((user) => ({
+      role: user.user.role, // ユーザーのロールをそのまま使用
+      name: `${user.user.firstName} ${user.user.lastName}`, // ユーザー名を作成
+    }));
 
-    users.forEach((user) => {
-      const fullName = `${user.lastName} ${user.firstName}`;
-      if (user.role === Role.ADMIN) {
-        groupedMembers.admin.push(fullName);
-      } else if (user.role === Role.LEADER) {
-        groupedMembers.leader.push(fullName);
-      } else {
-        groupedMembers.member.push(fullName);
-      }
-    });
+    console.log(memberItems);
 
-    // フォーマットされたメンバー一覧を返す
-    return {
-      admin: groupedMembers.admin,
-      subleaders: groupedMembers.leader,
-      members: groupedMembers.member,
-    };
+    return memberItems;
   }
 
   // メールアドレスとパスワードを更新するメソッド
   async updateEmailPassword(userId: string, newEmail: string) {
     // 既存ユーザーを取得
-    const user = await prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
 
@@ -105,7 +103,7 @@ export class AuthService {
     }
 
     // 新しいメールアドレスが既に存在するか確認
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await this.prisma.user.findUnique({
       where: { email: newEmail },
     });
 
@@ -114,7 +112,7 @@ export class AuthService {
     }
 
     // ユーザーの情報を更新
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {
         email: newEmail,
@@ -122,5 +120,34 @@ export class AuthService {
     });
 
     return updatedUser;
+  }
+
+  //ユーザーの削除メソッド
+  async deleteUserById(userId: string): Promise<void> {
+    try {
+      //ユーザー存在確認
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException({
+          code: 404,
+          message: 'No matching data found.',
+        });
+      }
+      //ユーザーの削除
+      await this.prisma.user.delete({
+        where: { id: userId },
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException({
+        code: 500,
+        message: 'A server error occurred.',
+      });
+    }
   }
 }

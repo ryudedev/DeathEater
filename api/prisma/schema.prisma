@@ -31,6 +31,8 @@ model User {
   firstName  String
   // ロール(デフォルト：member)
   role       Role   @default(MEMBER)
+  // ユーザーのプロフィール画像
+  avatar    String?
   // 作成日時
   created_at DateTime @default(now())
   // 更新日時
@@ -38,6 +40,7 @@ model User {
 
   stacks      Stack[]
   userClasses UserClasses[]
+  histories   History[]
 }
 
 model Organization {
@@ -103,9 +106,11 @@ model Capsule {
   id              String   @id @default(cuid())
   // Classとの関連ID
   class_id        String
+  // カプセルの名前
+  name            String
   // カプセルのサイズ
   size            String
-  // カプセルを作成した日
+  // カプセルを開封する日付
   release_date    DateTime
   // アップロード期限
   upload_deadline DateTime
@@ -178,15 +183,28 @@ model History {
   id         String   @id @default(cuid())
   // Capsuleモデルのidの参照キー
   capsule_id String
+  // イベント許可拒否のフィールド（外部キーとして設定）
+  history_id String?
   // イベントの内容を記録するフィールド（例: "Media added"）
   event      String
+  // ユーザーのID
+  user_id    String
   // 作成日時
   created_at DateTime @default(now())
   // 更新日時
   updated_at DateTime @updatedAt
 
+  user    User    @relation(fields: [user_id], references: [id])
   capsule Capsule @relation(fields: [capsule_id], references: [id])
+
+  // history_idが参照する外部キー（他のHistoryレコードを参照する場合）
+  history   History? @relation("HistoryHistory", fields: [history_id], references: [id])
+
+  // 逆方向のリレーション
+  historyRelations History[] @relation("HistoryHistory")
 }
+
+
 
 model UserClasses {
   // 自動インクリメントのプライマリキー
