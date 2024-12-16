@@ -7,7 +7,7 @@ import MediaAdd from '@/components/mediaAdd'
 import Message from '@/components/message'
 import axios from 'axios'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation' // 修正: useRouter のインポート
 import React, { useState } from 'react'
 
 // 定数
