@@ -30,7 +30,11 @@ export default function Live({ params }: LiveProps) {
   }, [capsules])
 
   if (!isOpened) {
-    return <p>まだ開封日ではありません。</p>
+    return (
+      <div>
+        <CapsuleOpen isTransition seconds={2000} roomId={roomId} />
+      </div>
+    )
   }
 
   return (

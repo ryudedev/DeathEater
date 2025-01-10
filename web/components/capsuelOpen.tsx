@@ -2,9 +2,11 @@
 
 import { useDashboardStore } from '@/store'
 import { DotLottie, DotLottieReact } from '@lottiefiles/dotlottie-react'
-import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import io, { Socket } from 'socket.io-client'
+import Mic from './mic'
+import Volume from './volume'
 
 type CapsuleOpenProps = {
   isTransition: boolean
@@ -26,12 +28,16 @@ export default function CapsuleOpen({
   const [dotLottie, setDotLottie] = useState<DotLottie | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [capsuleStates, setCapsuleStates] = useState<CapsuleState[]>([])
+  const [micEnabled, setMicEnabled] = useState(false)
+  const [speakerEnabled, setSpeakerEnabled] = useState(true)
+
   const { user } = useDashboardStore()
   const initialTouchY = useRef<number | null>(null)
   const socketRef = useRef<Socket | null>(null)
-  const router = useRouter()
 
-  // Lottie関連のコールバック
+  const audioRefs = useRef<Record<string, HTMLAudioElement>>({})
+  const localStream = useRef<MediaStream | null>(null)
+
   const dotLottieRefCallback = useCallback(
     (ref: DotLottie) => setDotLottie(ref),
     [],
@@ -44,73 +50,110 @@ export default function CapsuleOpen({
     }
   }
 
-  // タッチイベント: 開始
   const handleTouchStart = (e: React.TouchEvent) => {
     initialTouchY.current = e.touches[0].clientY
   }
 
-  // タッチイベント: 終了
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (initialTouchY.current !== null) {
       const finalTouchY = e.changedTouches[0].clientY
-
-      // 上方向スワイプの検知
       if (initialTouchY.current > finalTouchY) {
         playAnimation()
-
-        if (socketRef.current) {
-          socketRef.current.emit('capsule_open', { roomId })
-        }
-
+        socketRef.current?.emit('capsule_open', { roomId })
         if (isTransition) {
           openCapsule()
           setTimeout(() => setIsOpen(true), seconds)
         }
       }
-
-      initialTouchY.current = null // タッチ位置リセット
+      initialTouchY.current = null
     }
   }
 
-  // カプセルを開けるリクエストを送信
   const openCapsule = () => {
-    if (!user?.id) return // ユーザーが未ログインの場合は何もしない
-
-    const userId = user.id
-    const userIcon = 'https://via.placeholder.com/50' // ユーザーアイコン（デフォルト）
-
-    socketRef.current?.emit('openCapsule', { userId, userIcon })
+    if (!user?.id) return
+    const userIcon = 'https://via.placeholder.com/50' // 固定値としてデフォルトを設定
+    socketRef.current?.emit('openCapsule', { userId: user.id, userIcon })
   }
 
-  // WebSocketのセットアップ
+  const toggleMicrophone = async () => {
+    if (localStream.current) {
+      localStream.current.getTracks().forEach((track) => track.stop())
+      localStream.current = null
+      setMicEnabled(false)
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        })
+        localStream.current = stream
+        socketRef.current?.emit('startVoice', { roomId, streamId: stream.id })
+        setMicEnabled(true)
+      } catch (error) {
+        console.error('マイクアクセスエラー:', error)
+      }
+    }
+  }
+
+  const toggleSpeaker = () => {
+    if (!user?.id) {
+      console.warn('Invalid userId for toggleSpeaker')
+      return
+    }
+
+    const audio = audioRefs.current[user.id]
+    if (audio) {
+      audio.muted = !audio.muted
+      setSpeakerEnabled(!audio.muted)
+    } else {
+      console.warn(`Audioオブジェクトが見つかりません: userId=${user.id}`)
+      console.log('audioRefs:', audioRefs.current)
+    }
+  }
+
   useEffect(() => {
+    console.log('ユーザーデータ:', user)
     const socket = io(
       process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001',
       {
-        query: {
-          user: user?.id as string,
-        },
+        query: { user: user?.id as string },
       },
     )
     socketRef.current = socket
 
-    // サーバーからの状態更新を受信
     socket.on('stateUpdate', (state: CapsuleState[]) => {
-      console.log('State update received from server:', state)
-      setCapsuleStates(state)
+      const validatedState = state.map((item) => ({
+        ...item,
+        userId: item.userId || 'unknownUserId',
+        userIcon: item.userIcon || 'https://via.placeholder.com/50',
+      }))
+      console.log('Validated stateUpdate:', validatedState)
+      setCapsuleStates(validatedState)
     })
 
-    // サーバーからのリダイレクト指示を受信
-    socket.on('redirect', ({ url }: { url: string }) => {
-      console.log(`Redirecting to ${url}`)
-      router.push(url) // `/live/view` に遷移
-    })
+    socket.on(
+      'voiceStream',
+      ({ userId, stream }: { userId: string; stream: MediaStream }) => {
+        if (!audioRefs.current[userId]) {
+          console.log('Creating new Audio object for:', userId)
+          const audio = new Audio()
+          audio.srcObject = stream
+          audio.muted = false
+          audio
+            .play()
+            .catch((error) => console.error('Audio play error:', error))
+          audioRefs.current[userId] = audio
+        }
+      },
+    )
 
-    // クリーンアップ
     return () => {
       socket.disconnect()
+      Object.values(audioRefs.current).forEach((audio) => {
+        audio.pause()
+        audio.srcObject = null
+      })
     }
-  }, [user?.id, router])
+  }, [user?.id])
 
   return !isOpen ? (
     <div
@@ -129,15 +172,19 @@ export default function CapsuleOpen({
       <ul>
         {capsuleStates.map((state) => (
           <li key={state.userId}>
-            <img
+            <Image
               src={state.userIcon}
               alt="User Icon"
+              width={50}
+              height={50}
               style={{ width: '50px', borderRadius: '50%' }}
             />
             {state.status}
           </li>
         ))}
       </ul>
+      <Mic isEnabled={micEnabled} onClick={toggleMicrophone} />
+      <Volume isEnabled={speakerEnabled} onClick={toggleSpeaker} />
     </div>
   )
 }

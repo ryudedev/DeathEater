@@ -12,7 +12,7 @@
   "dependencies": {
     "@apollo/client": "^3.11.8",
     "@aws-amplify/ui-react": "^6.7.0",
-    "@lottiefiles/dotlottie-react": "^0.11.0",
+    "@lottiefiles/dotlottie-react": "^0.11.1",
     "amazon-cognito-identity-js": "^6.3.12",
     "axios": "^1.7.7",
     "graphql": "^16.9.0",
