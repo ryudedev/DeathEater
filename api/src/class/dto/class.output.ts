@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { CapsuleDto } from 'src/capsule/dto/capsule.dto';
+import { SchoolResponse } from 'src/school/dto/school.response';
 
 @ObjectType()
 export class ClassOutput {
@@ -20,4 +21,7 @@ export class ClassOutput {
 
   @Field(() => [CapsuleDto], { nullable: true })
   capsules?: CapsuleDto[];
+
+  @Field(() => SchoolResponse, { nullable: true })
+  school?: SchoolResponse;
 }

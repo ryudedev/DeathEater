@@ -42,7 +42,16 @@ export class AuthService {
           include: {
             class: {
               include: {
-                capsules: true,
+                capsules: {
+                  include: {
+                    media: true,
+                  },
+                },
+                school: {
+                  include: {
+                    organization: true,
+                  },
+                },
               },
             },
           },
@@ -85,8 +94,6 @@ export class AuthService {
       role: user.user.role, // ユーザーのロールをそのまま使用
       name: `${user.user.firstName} ${user.user.lastName}`, // ユーザー名を作成
     }));
-
-    console.log(memberItems);
 
     return memberItems;
   }

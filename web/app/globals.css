@@ -15,6 +15,17 @@
   --text: #000000;
   --border: #dedede;
   --ring: #1e9a9a;
+  --hover: #f0f0f0;
+  /* アラートのボーダーとテキストのカラー変数(60%使用、70%使用、80%使用、90%使用) */
+  --alert-border-text-60: #4CAF50;
+  --alert-border-text-70: #FFC107;
+  --alert-border-text-80: #FF9800;
+  --alert-border-text-90: #F44336;
+  /* アラートの背景カラー変数(60%使用、70%使用、80%使用、90%使用) */
+  --alert-bg-60: #E8F5E9;
+  --alert-bg-70: #FFF8E1;
+  --alert-bg-80: #FFF3E0;
+  --alert-bg-90: #FFEBEE;
 }
 
 @media (prefers-color-scheme: dark) {

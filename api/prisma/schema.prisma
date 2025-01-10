@@ -30,9 +30,9 @@ model User {
   // ユーザーの名前
   firstName  String
   // ロール(デフォルト：member)
-  role       Role   @default(MEMBER)
+  role       Role     @default(MEMBER)
   // ユーザーのプロフィール画像
-  avatar    String?
+  avatar     String?
   // 作成日時
   created_at DateTime @default(now())
   // 更新日時
@@ -41,24 +41,25 @@ model User {
   stacks      Stack[]
   userClasses UserClasses[]
   histories   History[]
+  Order       Order[]
 }
 
 model Organization {
   // 自動インクリメントのプライマリキー
-  id                  String    @id @default(cuid())
+  id                  String   @id @default(cuid())
   // 組織名
   name                String
   // 住所
   address             String
   // 登録番号
-  registration_number String    @unique
+  registration_number String   @unique
   // 作成日時
-  created_at          DateTime  @default(now())
+  created_at          DateTime @default(now())
   // 更新日時
-  updated_at          DateTime  @updatedAt
+  updated_at          DateTime @updatedAt
   // 複数のSchoolとリレーション
   schools             School[]
-  payments            Payment[]
+  orders              Order[]
 }
 
 model School {
@@ -159,23 +160,32 @@ model Stack {
   user    User    @relation(fields: [uploaded_by], references: [id])
 }
 
-model Payment {
+model Order {
   // 自動インクリメントのプライマリキー
-  id              String   @id @default(cuid())
-  // Organizationモデルのidを参照する外部キー
-  organization_id String
-  // 支払額を表すフィールド
-  amount          Float
+  id             String        @id @default(cuid())
+  // Userモデルのidを参照する外部キー
+  user_id        String
+  // Capsuleのサイズ
+  capsule_size   CapsuleSize
   // 支払が行われた日付
-  payment_date    String
-  // 支払の有効期限
-  duration        String
+  storage_years  Int
+  // 支払い金額
+  total_amount   Int
+  // Stripeの支払いID
+  stripe_charge_id   String
   // 作成日時
-  created_at      DateTime @default(now())
+  created_at     DateTime      @default(now())
   // 更新日時
-  updated_at      DateTime @updatedAt
+  updated_at     DateTime      @updatedAt
+  user           User          @relation(fields: [user_id], references: [id])
+  Organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+}
 
-  organization Organization @relation(fields: [organization_id], references: [id])
+enum CapsuleSize {
+  SMALL
+  MEDIUM
+  LARGE
 }
 
 model History {
@@ -198,13 +208,11 @@ model History {
   capsule Capsule @relation(fields: [capsule_id], references: [id])
 
   // history_idが参照する外部キー（他のHistoryレコードを参照する場合）
-  history   History? @relation("HistoryHistory", fields: [history_id], references: [id])
+  history History? @relation("HistoryHistory", fields: [history_id], references: [id])
 
   // 逆方向のリレーション
   historyRelations History[] @relation("HistoryHistory")
 }
-
-
 
 model UserClasses {
   // 自動インクリメントのプライマリキー

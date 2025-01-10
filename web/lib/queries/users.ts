@@ -21,8 +21,12 @@ export const GET_USER = gql`
             id
             name
             size
+            class_id
             release_date
             upload_deadline
+          }
+          school {
+            organization_id
           }
         }
       }
@@ -37,6 +41,14 @@ export const CREATE_USER = gql`
       firstName
       lastName
       email
+    }
+  }
+`
+
+export const GET_ROLE = gql`
+  query findUserByEmail($email: String!) {
+    findUserByEmail(email: $email) {
+      role
     }
   }
 `

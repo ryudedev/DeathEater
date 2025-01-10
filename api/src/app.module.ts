@@ -1,15 +1,16 @@
-import { Module } from '@nestjs/common';
-import { PrismaModule } from './prisma/prisma.module';
-import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { AuthModule } from './auth/auth.module';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { AuthModule } from './auth/auth.module';
 import { CapsuleModule } from './capsule/capsule.module';
-import { SchoolModule } from './school/school.module';
 import { ClassModule } from './class/class.module';
-import { OrgModule } from './org/org.module';
 import { HistoryModule } from './history/history.module';
-import { PaymentsModule } from './payments/payments.module';
+import { MediaModule } from './media/media.module';
+import { OrderModule } from './order/order.module';
+import { OrgModule } from './org/org.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { SchoolModule } from './school/school.module';
 
 // 環境変数を読み込むための設定
 import * as dotenv from 'dotenv';
@@ -33,7 +34,8 @@ dotenv.config();
     ClassModule,
     OrgModule,
     HistoryModule,
-    PaymentsModule,
+    OrderModule,
+    MediaModule,
   ],
 })
 export class AppModule {}

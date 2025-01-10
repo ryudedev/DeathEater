@@ -3,8 +3,10 @@ import Button from '@/components/button'
 import Card from '@/components/card'
 import Input from '@/components/input'
 import Label from '@/components/label'
-import MediaAdd from '@/components/mediaAdd'
 import Message from '@/components/message'
+import { GET_ROLE } from '@/lib/queries/users'
+import { useDashboardStore } from '@/store'
+import { useLazyQuery } from '@apollo/client'
 import axios from 'axios'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -21,6 +23,9 @@ export default function Home() {
   const [isValidPassword, setIsValidPassword] = useState<boolean | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>('')
   const router = useRouter()
+  // const [getRole, { data, loading, error }] = useLazyQuery(GET_ROLE)
+  const [getRole] = useLazyQuery(GET_ROLE)
+  const { setInit } = useDashboardStore()
 
   /**
    * メールアドレス変更ハンドラー
@@ -66,11 +71,19 @@ export default function Home() {
       )
 
       const data = await res.data
+
+      const role = await getRole({ variables: { email } })
+
       if (data.error) {
         setErrorMessage(`${data.error}`)
       }
 
-      router.push('/dashboard')
+      setInit()
+      if (role.data.findUserByEmail.role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err: unknown) {
       // エラーハンドリング
       if (axios.isAxiosError(err)) {
@@ -105,7 +118,6 @@ export default function Home() {
 
   return (
     <div>
-      <MediaAdd />
       <div className="h-screen w-screen flex flex-col gap-9 p-4 items-center justify-center bg-white">
         <Image
           src="/reminico.svg"

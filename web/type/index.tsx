@@ -27,6 +27,17 @@ export type Class = {
   created_at?: Date
   updated_at?: Date
   capsules?: Capsule[]
+  school?: School
+}
+
+export type School = {
+  id?: string
+  name?: string
+  organization_id?: string
+  school_type?: string
+  address: string
+  created_at?: Date
+  updated_at?: Date
 }
 
 export type Capsule = {
@@ -53,4 +64,14 @@ export type UserClassesWithClass = UserClasses & {
 export type MemberItem = {
   role: 'ADMIN' | 'LEADER' | 'MEMBER'
   name: string
+}
+
+export type MediaFile = {
+  key: string
+  url: string
+  type: string
+  name: string
+  size: number
+  category: string
+  uploadedAt: string
 }

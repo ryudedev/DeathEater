@@ -21,7 +21,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   // Promiseを利用して非同期処理をラップ
   return new Promise((resolve) => {
     user.authenticateUser(authDetails, {
-      onSuccess: (result) => {
+      onSuccess: async (result) => {
         const token = result.getIdToken().getJwtToken() // JWTトークンを取得
         const response = NextResponse.json({
           message: 'Sign-in successful!',
