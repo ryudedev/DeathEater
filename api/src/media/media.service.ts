@@ -116,8 +116,6 @@ export class MediaService {
         return [];
       }
 
-      console.log(data.Contents);
-
       // 各ファイルに対して署名付きURLを生成
       const response = await Promise.all(
         data.Contents.map(async (item) => {
@@ -133,13 +131,14 @@ export class MediaService {
           console.log('Generated signed URL for SVG:', signedUrl);
           const type = item.Key!.split('.').pop();
           const name = item.Key!.split('/').pop();
+          const category = await getFileCategory(type!);
           const file: MediaFile = {
             key: item.Key,
             url: signedUrl,
             type,
             name: name.split('.').shift(),
             size: item.Size,
-            category: await getFileCategory(type!),
+            category,
             uploadedAt: item.LastModified!.toISOString(),
           };
           console.log(file);

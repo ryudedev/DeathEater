@@ -10,7 +10,7 @@ import UsageAlert from '@/components/usageAlert'
 import Widget from '@/components/widget'
 import { CREATE_ORDER } from '@/lib/queries/orders'
 import { stripePromise } from '@/lib/stripe'
-import { MediaData, valueFormatter } from '@/lib/testData'
+import { valueFormatter } from '@/lib/testData'
 import { useDashboardStore } from '@/store'
 import { useMutation } from '@apollo/client'
 import { PieChart } from '@mui/x-charts/PieChart'
@@ -196,8 +196,14 @@ function CheckoutForm({
 }
 
 export default function ADMIN() {
-  const { user, members, selectedClassId, capsulesByClass, setInit } =
-    useDashboardStore()
+  const {
+    user,
+    members,
+    MediaData,
+    selectedClassId,
+    capsulesByClass,
+    setInit,
+  } = useDashboardStore()
   const router = useRouter()
   // ロールの確認が終了するまでダッシュボードを表示しないためのstate
   const [loading, setLoading] = useState(true)
@@ -423,7 +429,7 @@ export default function ADMIN() {
                 <PieChart
                   series={[
                     {
-                      data: MediaData[selectedCapsuleIndex],
+                      data: MediaData,
                       highlightScope: { fade: 'global', highlight: 'item' },
                       faded: {
                         innerRadius: 30,
@@ -440,7 +446,7 @@ export default function ADMIN() {
                   className="flex-1 pl-20"
                 />
                 <div className="flex-1 flex flex-col gap-[18px]">
-                  {MediaData[selectedCapsuleIndex].map((data, index) => {
+                  {MediaData.map((data, index) => {
                     const type = getMediaType(data.label)
                     return (
                       <MediaListItem

@@ -7,8 +7,13 @@ import { useEffect, useState } from 'react'
 export default function AdminHeader() {
   const [selectedClassName, setSelectedClassName] = useState<string>('')
   const [searchWord, setSearchWord] = useState<string>('')
-  const { classList, setClassMembers, setSelectedClassId, setMediaList } =
-    useDashboardStore()
+  const {
+    capsules,
+    classList,
+    setClassMembers,
+    setSelectedClassId,
+    setMediaList,
+  } = useDashboardStore()
 
   useEffect(() => {
     if (classList && classList.length > 0) {
@@ -18,10 +23,15 @@ export default function AdminHeader() {
         setSelectedClassName(firstClass.name)
         setClassMembers(firstClass.id)
         if (firstClass.school?.organization_id && firstClass.school_id) {
+          const capsule_size = capsules?.find((capsule) => {
+            return capsule.class_id === firstClass.id
+          })?.size
+          if (!capsule_size) return
           setMediaList(
             firstClass.school.organization_id,
             firstClass.school_id,
             firstClass.id,
+            capsule_size,
           )
         }
       }

@@ -53,6 +53,10 @@ export default function Type({ params: { type } }: TypeProps) {
     }
   }, [type])
 
+  useEffect(() => {
+    console.log(mediaList)
+  }, [mediaList])
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {

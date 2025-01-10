@@ -44,7 +44,7 @@ export type Capsule = {
   id?: string
   name?: string
   class_id?: string
-  size?: number
+  size?: string
   release_date?: Date
   upload_deadline?: Date
   created_at?: Date
@@ -74,4 +74,10 @@ export type MediaFile = {
   size: number
   category: string
   uploadedAt: string
+}
+
+export type MediaDataProps = {
+  label: string
+  value: number
+  color: string
 }

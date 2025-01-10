@@ -32,7 +32,7 @@ export default function MediaListItem({
       </div>
       <div className="flex flex-row gap-2 items-center">
         {/* メディアによって使用量は変更する */}
-        <p className="text-description">{usage}GB使用</p>
+        <p className="text-description">{usage}MB使用</p>
         <ChevronIcon />
       </div>
     </div>
