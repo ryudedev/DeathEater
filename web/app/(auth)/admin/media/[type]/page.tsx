@@ -29,6 +29,7 @@ export default function Type({ params: { type } }: TypeProps) {
   const [alertMessage, setAlertMessage] = useState<string | null>(null)
   const [isAlertVisible, setIsAlertVisible] = useState<boolean>(false)
   const {
+    capsules,
     selectedOrganizationId,
     selectedSchoolId,
     selectedClassId,
@@ -72,15 +73,18 @@ export default function Type({ params: { type } }: TypeProps) {
         ),
       )
 
-      const response = await uploadFile({
-        variables: {
-          files: base64Files,
-          organization_id: selectedOrganizationId,
-          school_id: selectedSchoolId,
-          class_id: selectedClassId,
-        },
-      })
-      console.log(response)
+      if (capsules !== null) {
+        const response = await uploadFile({
+          variables: {
+            files: base64Files,
+            organization_id: selectedOrganizationId,
+            school_id: selectedSchoolId,
+            class_id: selectedClassId,
+            capsule_id: capsules[capsules.length - 1].id,
+          },
+        })
+        console.log(response)
+      }
 
       setShowUploadDialog(false)
       setSelectedFiles([])

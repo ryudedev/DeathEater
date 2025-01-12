@@ -3,12 +3,13 @@ import { getFileCategory } from 'src/utils/file-category.utils';
 import { MediaFile } from 'src/media/dto/file.output';
 import { v4 as uuidv4 } from 'uuid';
 import { S3 } from 'aws-sdk';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class StacksService {
   private readonly s3: S3;
 
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     const region = process.env.AWS_REGION;
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
     const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
@@ -25,10 +26,12 @@ export class StacksService {
     });
   }
 
-  async uploadFiles(
+  async stackUploadFiles(
     organization_id: string,
     school_id: string,
     class_id: string,
+    capsule_id: string,
+    uploaded_by: string,
     files: string[], // base64エンコードされたファイルの配列
   ): Promise<string[]> {
     const urls: string[] = [];
@@ -83,6 +86,15 @@ export class StacksService {
 
         const result = await this.s3.upload(params).promise();
         urls.push(result.Location);
+
+        await this.prisma.stack.create({
+          data: {
+            capsule: { connect: { id: capsule_id } },
+            file_path: `${organization_id}/${school_id}/${class_id}/stack/${fileName}`,
+            file_type: extension,
+            user: { connect: { id: uploaded_by } },
+          },
+        });
       } catch (error) {
         console.error('Error uploading file:', error);
         throw new InternalServerErrorException('Failed to upload file to S3');
@@ -92,7 +104,7 @@ export class StacksService {
     return urls;
   }
 
-  async getFilesInDirectory(
+  async stackGetFilesInDirectory(
     organization_id: string,
     school_id: string,
     class_id: string,

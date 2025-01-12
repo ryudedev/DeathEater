@@ -11,6 +11,7 @@ import { OrderModule } from './order/order.module';
 import { OrgModule } from './org/org.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SchoolModule } from './school/school.module';
+import { StacksModule } from './stacks/stacks.module';
 
 // 環境変数を読み込むための設定
 import * as dotenv from 'dotenv';
@@ -36,6 +37,7 @@ dotenv.config();
     HistoryModule,
     OrderModule,
     MediaModule,
+    StacksModule,
   ],
 })
 export class AppModule {}

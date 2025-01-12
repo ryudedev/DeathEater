@@ -41,7 +41,7 @@ export const MediaItem = ({ type }: MediaItemProps) => {
 
   const item = media.find((item) => item.type === type)
   return (
-    <div className="flex flex-row gap-2.5">
+    <div className="flex flex-row gap-2.5 items-center">
       <div
         className={`w-2.5 h-2.5 ${item?.color} rounded-full overflow-hidden`}
       />

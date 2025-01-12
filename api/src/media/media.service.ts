@@ -3,12 +3,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { S3 } from 'aws-sdk';
 import { getFileCategory } from 'src/utils/file-category.utils';
 import { MediaFile } from './dto/file.output';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MediaService {
   private readonly s3: S3;
 
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     const region = process.env.AWS_REGION;
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
     const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
@@ -29,6 +30,8 @@ export class MediaService {
     organization_id: string,
     school_id: string,
     class_id: string,
+    capsule_id: string,
+    uploaded_by: string,
     files: string[], // base64エンコードされたファイルの配列
   ): Promise<string[]> {
     const urls: string[] = [];
@@ -83,6 +86,16 @@ export class MediaService {
 
         const result = await this.s3.upload(params).promise();
         urls.push(result.Location);
+
+        // メディアデータを保存
+        await this.prisma.media.create({
+          data: {
+            capsule_id,
+            file_path: `${organization_id}/${school_id}/${class_id}/${fileName}`,
+            file_type: extension,
+            uploaded_by,
+          },
+        });
       } catch (error) {
         console.error('Error uploading file:', error);
         throw new InternalServerErrorException('Failed to upload file to S3');

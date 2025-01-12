@@ -10,7 +10,7 @@
     "start:prisma": "./setup.sh",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "start:prisma:debug": "concurrently --names \"nestjs,prisma\" --prefix-colors \"green.bold,blue.bold\" \"pnpm start:debug\" \"pnpm start:prisma\"",
+    "start:prisma:debug": "pnpm start:prisma && pnpm start:debug",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",

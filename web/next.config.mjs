@@ -6,7 +6,7 @@ const nextConfig = {
       'placehold.jp',
       'death-s3.s3.amazonaws.com',
       'death-s3.s3.ap-southeast-1.amazonaws.com',
-      'via.placeholder.com'
+      'via.placeholder.com',
     ],
   },
 }

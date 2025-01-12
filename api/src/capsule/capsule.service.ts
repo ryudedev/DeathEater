@@ -25,7 +25,6 @@ export class CapsuleService {
       throw new NotFoundException(`Class with ID ${class_id} not found`);
     }
 
-    // 新しいカプセルの作成
     const newCapsule = await this.prisma.capsule.create({
       data: {
         name,

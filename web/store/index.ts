@@ -25,13 +25,13 @@ type DashboardStore = {
   capsulesByClass: Record<string, Capsule[]> // クラスごとに分けられたカプセル
   members: MemberItem[]
   mediaList: MediaFile[]
+  MediaData: MediaDataProps[]
   loading: boolean
   error: ApolloError | undefined
   selectedClassId: string
   selectedOrganizationId: string
   selectedSchoolId: string
   // メディアごとの容量を格納
-  MediaData: MediaDataProps[]
   setInit: () => Promise<void> // 初期化処理
   setClassMembers: (class_id: string) => Promise<void> // クラスメンバー情報取得
   setSelectedClassId: (index: string) => void
@@ -202,30 +202,28 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
           { 画像: 0, 動画: 0, 音声: 0, テキスト: 0 },
         )
 
-        // MediaData の型定義
-        const MediaData = Object.entries(categorie_size).map(
-          ([key, value]: [string, number]) => {
-            const color =
-              key === '画像'
-                ? '#00ff00'
-                : key === '動画'
-                  ? '#002bff'
-                  : key === '音声'
-                    ? '#800080'
-                    : '#000000'
-            const mg_size = value / 1024 / 1024
-            const size =
-              mg_size >= 1
-                ? parseFloat(mg_size.toFixed(2))
-                : parseFloat(mg_size.toPrecision(1))
-            return {
-              label: key,
-              // 少数第二位まで表示
-              value: size,
-              color: color,
-            }
-          },
-        )
+        const MediaData = (
+          Object.entries(categorie_size) as [string, number][]
+        ).map(([key, value]) => {
+          const color =
+            key === '画像'
+              ? '#00ff00'
+              : key === '動画'
+                ? '#002bff'
+                : key === '音声'
+                  ? '#800080'
+                  : '#000000'
+          const mg_size = value / 1024 / 1024
+          const size =
+            mg_size >= 1
+              ? parseFloat(mg_size.toFixed(2))
+              : parseFloat(mg_size.toPrecision(1))
+          return {
+            label: key,
+            value: size,
+            color: color,
+          }
+        })
 
         set({ MediaData })
       }

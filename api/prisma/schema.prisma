@@ -38,6 +38,7 @@ model User {
   // 更新日時
   updated_at DateTime @updatedAt
 
+  medias      Media[]
   stacks      Stack[]
   userClasses UserClasses[]
   histories   History[]
@@ -138,8 +139,14 @@ model Media {
   file_path  String
   // ファイルタイプ(例: "video")
   file_type  String
-
+  // アップロードユーザーID
+  uploaded_by String
+  // 作成日時
+  created_at DateTime @default(now())
+  // 更新日時
+  updated_at DateTime @updatedAt
   capsule Capsule @relation(fields: [capsule_id], references: [id])
+  user    User    @relation(fields: [uploaded_by], references: [id])
 }
 
 model Stack {
@@ -149,6 +156,8 @@ model Stack {
   capsule_id  String
   // ファイルパス
   file_path   String
+  // ファイルタイプ
+  file_type   String
   // アップロードユーザーID
   uploaded_by String
   // 作成日時

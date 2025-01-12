@@ -1,28 +1,30 @@
 import { gql } from '@apollo/client'
 
 export const UPLOAD_FILE = gql`
-  mutation uploadFiles(
+  mutation stackUploadFiles(
     $organization_id: String!
     $school_id: String!
     $class_id: String!
+    $capsule_id: String!
     $files: [String!]!
   ) {
-    uploadFiles(
+    stackUploadFiles(
       organization_id: $organization_id
       school_id: $school_id
       class_id: $class_id
+      capsule_id: $capsule_id
       files: $files
     )
   }
 `
 
 export const GET_FILES_IN_DIRECTORY = gql`
-  query GetFilesInDirectory(
+  query stackGetFilesInDirectory(
     $organization_id: String!
     $school_id: String!
     $class_id: String!
   ) {
-    getFilesInDirectory(
+    stackGetFilesInDirectory(
       organization_id: $organization_id
       school_id: $school_id
       class_id: $class_id

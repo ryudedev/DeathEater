@@ -12,12 +12,16 @@ export class StacksResolver {
     @Args('organization_id') organization_id: string,
     @Args('school_id') school_id: string,
     @Args('class_id') class_id: string,
+    @Args('capsule_id') capsule_id: string,
+    @Args('uploaded_by') uploaded_by: string,
     @Args('files', { type: () => [String] }) files: string[],
   ): Promise<string[]> {
-    const response = await this.stacksService.uploadFiles(
+    const response = await this.stacksService.stackUploadFiles(
       organization_id,
       school_id,
       class_id,
+      capsule_id,
+      uploaded_by,
       files,
     );
     return response;
@@ -30,7 +34,7 @@ export class StacksResolver {
     @Args('school_id') school_id: string,
     @Args('class_id') class_id: string,
   ): Promise<MediaFile[]> {
-    const response = await this.stacksService.getFilesInDirectory(
+    const response = await this.stacksService.stackGetFilesInDirectory(
       organization_id,
       school_id,
       class_id,
