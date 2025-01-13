@@ -14,6 +14,7 @@ export class MediaResolver {
     @Args('class_id') class_id: string,
     @Args('capsule_id') capsule_id: string,
     @Args('uploaded_by') uploaded_by: string,
+    @Args('deletable') deletable: boolean,
     @Args('files', { type: () => [String] }) files: string[],
   ): Promise<string[]> {
     const response = await this.mediaService.uploadFiles(
@@ -22,6 +23,7 @@ export class MediaResolver {
       class_id,
       capsule_id,
       uploaded_by,
+      deletable,
       files,
     );
     return response;

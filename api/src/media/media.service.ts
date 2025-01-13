@@ -32,7 +32,8 @@ export class MediaService {
     class_id: string,
     capsule_id: string,
     uploaded_by: string,
-    files: string[], // base64エンコードされたファイルの配列
+    deletable: boolean,
+    files: string[],
   ): Promise<string[]> {
     const urls: string[] = [];
     const bucketName = process.env.AWS_S3_BUCKET_NAME;
@@ -54,11 +55,10 @@ export class MediaService {
         }
 
         const contentType = matches[1];
-        const extension = contentType.split('/')[1].split('+')[0]; // 拡張子取得
+        const extension = contentType.split('/')[1].split('+')[0];
         const fileName = `${timestamp}_${uuid}.${extension}`;
-        // base64データからファイルデータを取得
         let base64Data;
-        // svgの場合
+
         if (extension === 'svg') {
           const svgHeader = 'data:image/svg+xml;base64,';
           if (file.startsWith(svgHeader)) {
@@ -69,10 +69,11 @@ export class MediaService {
         }
 
         const buffer = await Buffer.from(base64Data, 'base64');
+        const filePath = `${organization_id}/${school_id}/${class_id}/${fileName}`;
 
         const params = {
           Bucket: bucketName,
-          Key: `${organization_id}/${school_id}/${class_id}/${fileName}`,
+          Key: filePath,
           Body: buffer,
           ContentEncoding: 'base64',
           ContentType: contentType,
@@ -85,13 +86,22 @@ export class MediaService {
         const result = await this.s3.upload(params).promise();
         urls.push(result.Location);
 
-        // メディアデータを保存
+        // メディアデータを保存（リレーション定義に従って修正）
         await this.prisma.media.create({
           data: {
-            capsule_id,
-            file_path: `${organization_id}/${school_id}/${class_id}/${fileName}`,
+            capsule: {
+              connect: {
+                id: capsule_id,
+              },
+            },
+            user: {
+              connect: {
+                id: uploaded_by,
+              },
+            },
+            deletable,
+            file_path: filePath,
             file_type: extension,
-            uploaded_by,
           },
         });
       } catch (error) {
