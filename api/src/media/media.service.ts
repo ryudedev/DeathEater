@@ -82,8 +82,6 @@ export class MediaService {
           delete params.ContentEncoding;
         }
 
-        console.log(params);
-
         const result = await this.s3.upload(params).promise();
         urls.push(result.Location);
 
@@ -132,6 +130,9 @@ export class MediaService {
       // 各ファイルに対して署名付きURLを生成
       const response = await Promise.all(
         data.Contents.map(async (item) => {
+          const media_res = await this.prisma.stack.findFirst({
+            where: { file_path: item.Key! },
+          });
           const signedUrlParams = {
             Bucket: bucketName,
             Key: item.Key!,
@@ -141,7 +142,6 @@ export class MediaService {
             'getObject',
             signedUrlParams,
           );
-          console.log('Generated signed URL for SVG:', signedUrl);
           const type = item.Key!.split('.').pop();
           const name = item.Key!.split('/').pop();
           const category = await getFileCategory(type!);
@@ -152,9 +152,9 @@ export class MediaService {
             name: name.split('.').shift(),
             size: item.Size,
             category,
+            uploaded_by: media_res?.uploaded_by,
             uploadedAt: item.LastModified!.toISOString(),
           };
-          console.log(file);
           return file;
         }),
       );

@@ -4,10 +4,13 @@ import Button from '@/components/button'
 import DashboardGrid from '@/components/dashboardGrid'
 import PlusIcon from '@/components/icon/plusIcon'
 import Input from '@/components/input'
+import ListRow from '@/components/listRow'
 import MediaListItem from '@/components/mediaListItem'
 import MemberItem from '@/components/memberItem'
+import ImageUploadForm from '@/components/UploadForm/ImageUploadForm'
 import UsageAlert from '@/components/usageAlert'
 import Widget from '@/components/widget'
+import { UPLOAD_FILE } from '@/lib/queries/media'
 import { CREATE_ORDER } from '@/lib/queries/orders'
 import { stripePromise } from '@/lib/stripe'
 import { valueFormatter } from '@/lib/testData'
@@ -198,8 +201,13 @@ function CheckoutForm({
 export default function ADMIN() {
   const {
     user,
+    stackList,
     members,
     MediaData,
+    mediaList,
+    capsules,
+    selectedOrganizationId,
+    selectedSchoolId,
     selectedClassId,
     capsulesByClass,
     setInit,
@@ -232,10 +240,14 @@ export default function ADMIN() {
     useState<boolean>(false)
   const [isCapsuleNameError, setIsCapsuleNameError] = useState<boolean>(false)
   const capsuleNameRef = useRef<HTMLInputElement>(null)
+  const [isUpload, setIsUpload] = useState<boolean>(false)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const layout = [
     { i: '1', x: 0, y: 0, w: 7, h: 10 },
     { i: '2', x: 8, y: 0, w: 3, h: 9 },
+    { i: '3', x: 0, y: 11, w: 7, h: 9 },
   ]
+  const [uploadFile] = useMutation(UPLOAD_FILE)
 
   type CapsuleSize = 'SMALL' | 'MEDIUM' | 'LARGE'
   const roleOrder = { ADMIN: 1, LEADER: 2, MEMBER: 3 }
@@ -302,11 +314,60 @@ export default function ADMIN() {
     }
   }
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    try {
+      const base64Files = await Promise.all(
+        selectedFiles.map(
+          (file) =>
+            new Promise<string>((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result as string)
+              reader.onerror = reject
+              reader.readAsDataURL(file)
+            }),
+        ),
+      )
+
+      if (capsules !== null) {
+        const response = await uploadFile({
+          variables: {
+            files: base64Files,
+            organization_id: selectedOrganizationId,
+            school_id: selectedSchoolId,
+            class_id: selectedClassId,
+            uploaded_by: user?.id,
+            capsule_id: capsules[capsules.length - 1].id,
+          },
+        })
+        console.log(response)
+      }
+      setSelectedFiles([])
+    } catch (error) {
+      console.error(error)
+      alert('Upload failed.')
+    }
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return
+    const filesArray = Array.from(event.target.files)
+    setSelectedFiles(filesArray)
+  }
+
   if (loading) return <div>Loading...</div>
 
   return (
     <div>
       <AdminHeader />
+      {isUpload && (
+        <ImageUploadForm
+          selectedFiles={selectedFiles}
+          setSelectedFiles={setSelectedFiles}
+          handleSubmit={handleSubmit}
+          handleFileChange={handleFileChange}
+        />
+      )}
       {showCreateCapsuleDialog && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
           <div className="transform rounded-lg shadow-lg p-6 bg-white flex flex-col gap-6 transition-all duration-300">
@@ -416,7 +477,7 @@ export default function ADMIN() {
             onLeftChevronClick={onLeftChevronClick}
             onRightChevronClick={onRightChevronClick}
           >
-            <div className="flex flex-col gap-4">
+            <div className="h-full flex flex-col gap-4">
               <div className="w-full flex justify-end">
                 <Button
                   className="p-4 text-white font-bold rounded-xl"
@@ -425,39 +486,52 @@ export default function ADMIN() {
                   カプセルを作成
                 </Button>
               </div>
-              <div className="flex flex-row gap-6">
-                <PieChart
-                  series={[
-                    {
-                      data: MediaData,
-                      highlightScope: { fade: 'global', highlight: 'item' },
-                      faded: {
-                        innerRadius: 30,
-                        additionalRadius: -30,
-                        color: 'gray',
-                      },
-                      valueFormatter,
-                    },
-                  ]}
-                  height={200}
-                  slotProps={{
-                    legend: { hidden: true },
-                  }}
-                  className="flex-1 pl-20"
-                />
-                <div className="flex-1 flex flex-col gap-[18px]">
-                  {MediaData.map((data, index) => {
-                    const type = getMediaType(data.label)
-                    return (
-                      <MediaListItem
-                        key={index}
-                        onClick={() => router.push(`/admin/media/${type}`)}
-                        mediaType={data.label}
-                        usage={data.value}
-                      />
-                    )
-                  })}
-                </div>
+              <div
+                className={`h-full flex flex-row gap-6 ${mediaList.length === 0 && 'items-center justify-center'}`}
+              >
+                {MediaData.length > 0 && mediaList.length > 0 ? (
+                  <>
+                    <PieChart
+                      series={[
+                        {
+                          data: MediaData,
+                          highlightScope: { fade: 'global', highlight: 'item' },
+                          faded: {
+                            innerRadius: 30,
+                            additionalRadius: -30,
+                            color: 'gray',
+                          },
+                          valueFormatter,
+                        },
+                      ]}
+                      height={200}
+                      slotProps={{
+                        legend: { hidden: true },
+                      }}
+                      className="flex-1 pl-20"
+                    />
+                    <div className="flex-1 flex flex-col gap-[18px]">
+                      {MediaData.map((data, index) => {
+                        const type = getMediaType(data.label)
+                        return (
+                          <MediaListItem
+                            key={index}
+                            onClick={() => router.push(`/admin/media/${type}`)}
+                            mediaType={data.label}
+                            usage={data.value}
+                          />
+                        )
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <Button
+                    className="p-4 rounded-lg bg-white"
+                    onClick={() => setIsUpload(true)}
+                  >
+                    メディアを追加
+                  </Button>
+                )}
               </div>
             </div>
           </Widget>
@@ -474,6 +548,25 @@ export default function ADMIN() {
                   role={member.role}
                 />
               ))}
+            </div>
+          </Widget>
+          <Widget key="3" className="border border-border" title="申請リスト">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-row items-center px-2 space-x-4">
+                <div className="w-[65px] h-1" />
+                <p className="flex-1 font-bold">名前</p>
+                <p className="flex-1 font-bold">タイプ</p>
+                <p className="font-bold">承認</p>
+              </div>
+              {stackList &&
+                stackList.map((stack) => (
+                  <ListRow
+                    image={stack.url}
+                    uploaded_by={stack.uploaded_by}
+                    type={stack.type}
+                    key={stack.key}
+                  />
+                ))}
             </div>
           </Widget>
         </DashboardGrid>

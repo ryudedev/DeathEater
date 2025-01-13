@@ -1,5 +1,5 @@
 'use client'
-import { UPLOAD_FILE } from '@/lib/queries/media'
+import { STACK_UPLOAD_FILE } from '@/lib/queries/stacks'
 import { useDashboardStore } from '@/store'
 import { useMutation } from '@apollo/client'
 import { useState } from 'react'
@@ -23,7 +23,7 @@ interface MediaAddProps {
 const MediaAdd: React.FC<MediaAddProps> = ({ onClose }) => {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [fileError, setFileError] = useState<boolean | null>(null)
-  const [uploadFiles] = useMutation(UPLOAD_FILE)
+  const [uploadFiles] = useMutation(STACK_UPLOAD_FILE)
   const {
     user,
     capsules,

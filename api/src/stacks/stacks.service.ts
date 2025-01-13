@@ -4,12 +4,16 @@ import { MediaFile } from 'src/media/dto/file.output';
 import { v4 as uuidv4 } from 'uuid';
 import { S3 } from 'aws-sdk';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class StacksService {
   private readonly s3: S3;
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
+  ) {
     const region = process.env.AWS_REGION;
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
     const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
@@ -82,8 +86,6 @@ export class StacksService {
           delete params.ContentEncoding;
         }
 
-        console.log(params);
-
         const result = await this.s3.upload(params).promise();
         urls.push(result.Location);
 
@@ -131,6 +133,9 @@ export class StacksService {
       // 各ファイルに対して署名付きURLを生成
       const response = await Promise.all(
         data.Contents.map(async (item) => {
+          const stack_res = await this.prisma.stack.findFirst({
+            where: { file_path: item.Key! },
+          });
           const signedUrlParams = {
             Bucket: bucketName,
             Key: item.Key!,
@@ -140,10 +145,12 @@ export class StacksService {
             'getObject',
             signedUrlParams,
           );
-          console.log('Generated signed URL for SVG:', signedUrl);
           const type = item.Key!.split('.').pop();
           const name = item.Key!.split('/').pop();
           const category = await getFileCategory(type!);
+          const uploaded_user = await this.authService.findUserById(
+            stack_res?.uploaded_by,
+          );
           const file: MediaFile = {
             key: item.Key,
             url: signedUrl,
@@ -151,9 +158,9 @@ export class StacksService {
             name: name.split('.').shift(),
             size: item.Size,
             category,
+            uploaded_by: `${uploaded_user.lastName} ${uploaded_user.firstName}`,
             uploadedAt: item.LastModified!.toISOString(),
           };
-          console.log(file);
           return file;
         }),
       );

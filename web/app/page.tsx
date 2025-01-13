@@ -75,10 +75,12 @@ export default function Home() {
       const role = await getRole({ variables: { email } })
 
       if (data.error) {
+        console.log(data.error)
         setErrorMessage(`${data.error}`)
       }
 
       setInit()
+      console.log(role)
       if (role.data.findUserByEmail.role === 'ADMIN') {
         router.push('/admin')
       } else {
@@ -108,6 +110,7 @@ export default function Home() {
         }
       } else if (err instanceof Error) {
         // 一般的なエラーオブジェクトの場合
+        console.log(err)
         setErrorMessage(`予期しないエラー: ${err.message}`)
       } else {
         // それ以外の場合

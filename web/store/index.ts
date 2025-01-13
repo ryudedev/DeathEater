@@ -3,6 +3,7 @@ import client from '@/lib/apolloClient'
 import { get_cookie } from '@/lib/cookie'
 import { GET_MEMBER } from '@/lib/queries/histories'
 import { GET_FILES_IN_DIRECTORY } from '@/lib/queries/media'
+import { STACK_GET_FILES_IN_DIRECTORY } from '@/lib/queries/stacks'
 import { GET_USER } from '@/lib/queries/users'
 import {
   Capsule,
@@ -10,6 +11,7 @@ import {
   MediaDataProps,
   MediaFile,
   MemberItem,
+  StackProps,
   User,
   UserClassesWithClass,
 } from '@/type'
@@ -23,6 +25,7 @@ type DashboardStore = {
   classList: Class[] | null
   capsules: Capsule[] | null
   capsulesByClass: Record<string, Capsule[]> // クラスごとに分けられたカプセル
+  stackList: StackProps[] | null
   members: MemberItem[]
   mediaList: MediaFile[]
   MediaData: MediaDataProps[]
@@ -39,7 +42,7 @@ type DashboardStore = {
     organization_id: string,
     school_id: string,
     class_id: string,
-    capsule_size: string,
+    capsule_id: string,
   ) => Promise<void>
 }
 
@@ -50,6 +53,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   classList: null,
   capsules: null,
   capsulesByClass: {},
+  stackList: [],
   members: [],
   mediaList: [],
   MediaData: [],
@@ -101,6 +105,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
             ) || []
         })
 
+        // Set initial selected IDs from the first available class
+        const firstClass = classes?.[0]
+        const initialClassId = firstClass?.id || ''
+        const initialOrganizationId = firstClass?.school?.organization_id || ''
+        const initialSchoolId = firstClass?.school_id || ''
+
         set({
           email,
           user: userWithoutClasses,
@@ -108,6 +118,9 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
           classList: classes,
           capsules: allCapsules,
           capsulesByClass,
+          selectedClassId: initialClassId,
+          selectedOrganizationId: initialOrganizationId,
+          selectedSchoolId: initialSchoolId,
         })
       }
     } catch (error: any) {
@@ -178,24 +191,39 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     organization_id: string,
     school_id: string,
     class_id: string,
+    capsule_id: string,
   ) => {
     set({ loading: true, error: undefined })
 
     try {
-      const { data } = await client.query({
-        query: GET_FILES_IN_DIRECTORY,
-        variables: { organization_id, school_id, class_id },
-        fetchPolicy: 'network-only',
-      })
+      const [directoryData, stackData] = await Promise.all([
+        client.query({
+          query: GET_FILES_IN_DIRECTORY,
+          variables: { organization_id, school_id, class_id },
+          fetchPolicy: 'network-only',
+        }),
+        client.query({
+          query: STACK_GET_FILES_IN_DIRECTORY,
+          variables: { organization_id, school_id, class_id, capsule_id },
+          fetchPolicy: 'network-only',
+        }),
+      ])
 
-      if (data?.getFilesInDirectory) {
-        set({ mediaList: data.getFilesInDirectory })
+      if (stackData?.data?.stackGetFilesInDirectory) {
+        set({
+          stackList: stackData.data.stackGetFilesInDirectory,
+        })
+      }
+
+      if (directoryData?.data?.getFilesInDirectory) {
+        set({ mediaList: directoryData.data.getFilesInDirectory })
+
         // category_size の型定義
-        const categorie_size = data.getFilesInDirectory.reduce(
+        const categorie_size = directoryData.data.getFilesInDirectory.reduce(
           (acc: Record<string, number>, item: any) => {
             const category = item.category
             if (category) {
-              acc[category] += item.size
+              acc[category] = (acc[category] || 0) + item.size
             }
             return acc
           },
@@ -227,6 +255,8 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
         set({ MediaData })
       }
+
+      // stackData の利用が必要であればここで処理を追加
     } catch (error: any) {
       if (error instanceof ApolloError) {
         set({ error })

@@ -14,7 +14,7 @@ export default function DashboardGrid({
   children,
 }: DashboardGridProps) {
   return (
-    <div className="max-w-[1200px] mx-auto px-4">
+    <div className="w-screen mx-auto px-4">
       <ResponsiveGridLayout
         className="layout"
         layouts={{ lg: layout }}

@@ -31,7 +31,7 @@ export default function AdminHeader() {
             firstClass.school.organization_id,
             firstClass.school_id,
             firstClass.id,
-            capsule_size,
+            capsules[0].id!,
           )
         }
       }

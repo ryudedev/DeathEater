@@ -21,5 +21,8 @@ export class MediaFile {
   category: string;
 
   @Field()
+  uploaded_by: string;
+
+  @Field()
   uploadedAt: string;
 }

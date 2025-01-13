@@ -81,3 +81,14 @@ export type MediaDataProps = {
   value: number
   color: string
 }
+
+export type StackProps = {
+  key: string
+  url: string
+  type: string
+  name: string
+  size: number
+  category: string
+  uploaded_by: string
+  uploadedAt: string
+}
