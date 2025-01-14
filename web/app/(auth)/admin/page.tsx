@@ -10,6 +10,7 @@ import MemberItem from '@/components/memberItem'
 import ImageUploadForm from '@/components/UploadForm/ImageUploadForm'
 import UsageAlert from '@/components/usageAlert'
 import Widget from '@/components/widget'
+import { CREATE_CAPSULE } from '@/lib/queries/capsules'
 import { UPLOAD_FILE } from '@/lib/queries/media'
 import { CREATE_ORDER } from '@/lib/queries/orders'
 import { stripePromise } from '@/lib/stripe'
@@ -48,11 +49,12 @@ function CheckoutForm({
   isCapsuleNameError,
   capsuleNameRef,
 }: CheckoutFormProps) {
-  const { user } = useDashboardStore()
+  const { user, selectedClassId } = useDashboardStore()
   const stripe = useStripe()
   const router = useRouter()
   const elements = useElements()
   const [createOrder] = useMutation(CREATE_ORDER)
+  const [createCapsule] = useMutation(CREATE_CAPSULE)
   const [processing, setProcessing] = useState(false)
   const [stripeError, setStripeError] = useState<string | null>(null)
 
@@ -94,6 +96,17 @@ function CheckoutForm({
             capsule_size: capsuleSize,
             storage_years: storageYears,
             stripe_token: token.id,
+          },
+        },
+      })
+      await createCapsule({
+        variables: {
+          createCapsuleInput: {
+            name: `${capsuleNameRef?.current?.value}`,
+            class_id: selectedClassId,
+            size: capsuleSize,
+            release_date: new Date(),
+            upload_deadline: new Date(),
           },
         },
       })
