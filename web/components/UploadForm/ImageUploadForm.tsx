@@ -9,6 +9,8 @@ type UploadFormProps = {
   setSelectedFiles: React.Dispatch<React.SetStateAction<File[]>>
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  isCheck: boolean[]
+  handleCheck: (index: number) => void
 }
 
 const UploadForm: React.FC<UploadFormProps> = ({
@@ -16,6 +18,8 @@ const UploadForm: React.FC<UploadFormProps> = ({
   setSelectedFiles,
   handleSubmit,
   handleFileChange,
+  isCheck,
+  handleCheck,
 }) => {
   const handleFileRemove = (index: number) => {
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index))
@@ -69,6 +73,11 @@ const UploadForm: React.FC<UploadFormProps> = ({
                   <p className="font-bold">{file.name}</p>
                 </div>
                 <p>{file.type}</p>
+                <input
+                  type="checkbox"
+                  value={isCheck[index]}
+                  onChange={() => handleCheck(index)}
+                />
                 {/* ファイル削除ボタン */}
                 <div onClick={() => handleFileRemove(index)}>
                   <Trash color="#441aff" />

@@ -1,7 +1,7 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-export class MediaFile {
+export class StackFile {
   @Field() // GraphQLフィールドとして定義
   key: string;
 
@@ -19,9 +19,6 @@ export class MediaFile {
 
   @Field() // GraphQLフィールドとして定義
   category: string;
-
-  @Field(() => Boolean) // GraphQLフィールドとして定義
-  deletable: boolean;
 
   @Field()
   uploaded_by: string;

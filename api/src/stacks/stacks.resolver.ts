@@ -1,7 +1,7 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { StacksService } from './stacks.service';
 import { Stack } from './dto/stack.output';
-import { MediaFile } from 'src/media/dto/file.output';
+import { StackFile } from './dto/stack-file.output';
 
 @Resolver(() => Stack)
 export class StacksResolver {
@@ -28,12 +28,12 @@ export class StacksResolver {
   }
 
   // organization_idとschool_idとclass_idを引数で受け取りS3に保存されているファイルのURLを返す
-  @Query(() => [MediaFile])
+  @Query(() => [StackFile])
   async stackGetFilesInDirectory(
     @Args('organization_id') organization_id: string,
     @Args('school_id') school_id: string,
     @Args('class_id') class_id: string,
-  ): Promise<MediaFile[]> {
+  ): Promise<StackFile[]> {
     const response = await this.stacksService.stackGetFilesInDirectory(
       organization_id,
       school_id,

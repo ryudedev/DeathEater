@@ -36,7 +36,7 @@ export default function AdminHeader() {
         }
       }
     }
-  }, [classList, setClassMembers, setMediaList, setSelectedClassId])
+  }, [classList, setClassMembers, setMediaList, setSelectedClassId, capsules])
 
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [isMounted, setIsMounted] = useState<boolean>(false)

@@ -28,7 +28,9 @@ export default function Type({ params: { type } }: TypeProps) {
   const router = useRouter()
   const [alertMessage, setAlertMessage] = useState<string | null>(null)
   const [isAlertVisible, setIsAlertVisible] = useState<boolean>(false)
+  const [isCheck, setIsCheck] = useState<boolean[]>([])
   const {
+    user,
     capsules,
     selectedOrganizationId,
     selectedSchoolId,
@@ -54,10 +56,6 @@ export default function Type({ params: { type } }: TypeProps) {
     }
   }, [type])
 
-  useEffect(() => {
-    console.log(mediaList)
-  }, [mediaList])
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
@@ -73,17 +71,26 @@ export default function Type({ params: { type } }: TypeProps) {
         ),
       )
 
-      if (capsules !== null) {
-        const response = await uploadFile({
+      if (
+        capsules?.length &&
+        base64Files.length &&
+        selectedOrganizationId &&
+        selectedSchoolId &&
+        selectedClassId &&
+        user?.id &&
+        isCheck.length
+      ) {
+        await uploadFile({
           variables: {
             files: base64Files,
             organization_id: selectedOrganizationId,
             school_id: selectedSchoolId,
             class_id: selectedClassId,
             capsule_id: capsules[capsules.length - 1].id,
+            uploaded_by: user.id,
+            deletable: isCheck,
           },
         })
-        console.log(response)
       }
 
       setShowUploadDialog(false)
@@ -107,6 +114,7 @@ export default function Type({ params: { type } }: TypeProps) {
     if (!event.target.files) return
     const filesArray = Array.from(event.target.files)
     setSelectedFiles(filesArray)
+    setIsCheck(filesArray.map(() => false))
   }
 
   return (
@@ -148,25 +156,29 @@ export default function Type({ params: { type } }: TypeProps) {
             </div>
           </div>
 
-          <div className="flex-1 p-4">
+          <div className="flex-2 p-4">
             <div className="flex flex-col gap-6 h-full overflow-hidden">
               <div className="flex flex-row items-center gap-4 font-bold text-description">
                 <p className="flex-1">ファイル名</p>
                 <p className="flex-1">タイプ</p>
                 <p className="flex-1">アップロード日</p>
+                <p className="flex-1">削除</p>
               </div>
               <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[calc(100vh-300px)]">
-                {mediaList
-                  .filter((data) => data.category === mediaType)
-                  .map((data) => (
-                    <MediaItemRow
-                      name={data.name}
-                      type={data.type}
-                      uploadedAt={data.uploadedAt}
-                      key={data.key}
-                      onClick={() => setSelectedMedia(data)}
-                    />
-                  ))}
+                {mediaList.length > 0 &&
+                  mediaList
+                    .filter((data) => data.category === mediaType)
+                    .map((data) => (
+                      <MediaItemRow
+                        name={data.name}
+                        type={data.type}
+                        uploadedAt={data.uploadedAt}
+                        filePath={data.key}
+                        deletable={data.deletable}
+                        key={data.key}
+                        onClick={() => setSelectedMedia(data)}
+                      />
+                    ))}
               </div>
             </div>
           </div>
@@ -207,6 +219,12 @@ export default function Type({ params: { type } }: TypeProps) {
           setSelectedFiles={setSelectedFiles}
           handleSubmit={handleSubmit}
           handleFileChange={handleFileChange}
+          isCheck={isCheck}
+          handleCheck={(index) => {
+            const newIsCheck = [...isCheck]
+            newIsCheck[index] = !newIsCheck[index]
+            setIsCheck(newIsCheck)
+          }}
         />
       )}
     </div>

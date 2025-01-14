@@ -80,7 +80,6 @@ export default function Home() {
       }
 
       setInit()
-      console.log(role)
       if (role.data.findUserByEmail.role === 'ADMIN') {
         router.push('/admin')
       } else {

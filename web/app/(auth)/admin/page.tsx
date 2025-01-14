@@ -242,6 +242,7 @@ export default function ADMIN() {
   const capsuleNameRef = useRef<HTMLInputElement>(null)
   const [isUpload, setIsUpload] = useState<boolean>(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [isCheck, setIsCheck] = useState<boolean[]>([])
   const layout = [
     { i: '1', x: 0, y: 0, w: 7, h: 10 },
     { i: '2', x: 8, y: 0, w: 3, h: 9 },
@@ -329,18 +330,26 @@ export default function ADMIN() {
         ),
       )
 
-      if (capsules !== null) {
-        const response = await uploadFile({
+      if (
+        capsules?.length &&
+        base64Files.length &&
+        selectedOrganizationId &&
+        selectedSchoolId &&
+        selectedClassId &&
+        user?.id &&
+        isCheck.length
+      ) {
+        await uploadFile({
           variables: {
             files: base64Files,
             organization_id: selectedOrganizationId,
             school_id: selectedSchoolId,
             class_id: selectedClassId,
             uploaded_by: user?.id,
+            deletable: isCheck,
             capsule_id: capsules[capsules.length - 1].id,
           },
         })
-        console.log(response)
       }
       setSelectedFiles([])
     } catch (error) {
@@ -353,6 +362,7 @@ export default function ADMIN() {
     if (!event.target.files) return
     const filesArray = Array.from(event.target.files)
     setSelectedFiles(filesArray)
+    setIsCheck(filesArray.map(() => false))
   }
 
   if (loading) return <div>Loading...</div>
@@ -366,6 +376,14 @@ export default function ADMIN() {
           setSelectedFiles={setSelectedFiles}
           handleSubmit={handleSubmit}
           handleFileChange={handleFileChange}
+          isCheck={isCheck}
+          handleCheck={(index) => {
+            setIsCheck((prev) => {
+              const newCheck = [...prev]
+              newCheck[index] = !newCheck[index]
+              return newCheck
+            })
+          }}
         />
       )}
       {showCreateCapsuleDialog && (

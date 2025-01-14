@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { getFileCategory } from 'src/utils/file-category.utils';
-import { MediaFile } from 'src/media/dto/file.output';
+import { StackFile } from './dto/stack-file.output';
 import { v4 as uuidv4 } from 'uuid';
 import { S3 } from 'aws-sdk';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -110,7 +110,7 @@ export class StacksService {
     organization_id: string,
     school_id: string,
     class_id: string,
-  ): Promise<MediaFile[]> {
+  ): Promise<StackFile[]> {
     const bucketName = process.env.AWS_S3_BUCKET_NAME;
 
     if (!bucketName) {
@@ -151,7 +151,7 @@ export class StacksService {
           const uploaded_user = await this.authService.findUserById(
             stack_res?.uploaded_by,
           );
-          const file: MediaFile = {
+          const file: StackFile = {
             key: item.Key,
             url: signedUrl,
             type,

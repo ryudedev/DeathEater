@@ -32,7 +32,7 @@ export class MediaService {
     class_id: string,
     capsule_id: string,
     uploaded_by: string,
-    deletable: boolean,
+    deletable: boolean[],
     files: string[],
   ): Promise<string[]> {
     const urls: string[] = [];
@@ -42,12 +42,15 @@ export class MediaService {
       throw new Error('AWS_S3_BUCKET_NAME environment variable is missing');
     }
 
-    for (const file of files) {
+    // for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
       try {
         const timestamp = new Date().getTime();
         const uuid = uuidv4();
 
-        const matches = file.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,/);
+        const matches = files[i].match(
+          /^data:(image\/[a-zA-Z0-9+.-]+);base64,/,
+        );
         if (!matches) {
           throw new Error(
             'Invalid file format. Expected base64 encoded image.',
@@ -61,11 +64,11 @@ export class MediaService {
 
         if (extension === 'svg') {
           const svgHeader = 'data:image/svg+xml;base64,';
-          if (file.startsWith(svgHeader)) {
-            base64Data = await file.replace(svgHeader, '');
+          if (files[i].startsWith(svgHeader)) {
+            base64Data = await files[i].replace(svgHeader, '');
           }
         } else {
-          base64Data = await file.replace(/^data:image\/\w+;base64,/, '');
+          base64Data = await files[i].replace(/^data:image\/\w+;base64,/, '');
         }
 
         const buffer = await Buffer.from(base64Data, 'base64');
@@ -99,7 +102,7 @@ export class MediaService {
                 id: uploaded_by,
               },
             },
-            deletable,
+            deletable: deletable[i],
             file_path: filePath,
             file_type: extension,
           },
@@ -140,9 +143,10 @@ export class MediaService {
       // 各ファイルに対して署名付きURLを生成
       const response = await Promise.all(
         data.Contents.map(async (item) => {
-          const media_res = await this.prisma.stack.findFirst({
+          const media_res = await this.prisma.media.findFirst({
             where: { file_path: item.Key! },
           });
+
           const signedUrlParams = {
             Bucket: bucketName,
             Key: item.Key!,
@@ -162,6 +166,7 @@ export class MediaService {
             name: name.split('.').shift(),
             size: item.Size,
             category,
+            deletable: media_res?.deletable,
             uploaded_by: media_res?.uploaded_by,
             uploadedAt: item.LastModified!.toISOString(),
           };
@@ -176,5 +181,68 @@ export class MediaService {
         'Failed to retrieve files from S3 directory',
       );
     }
+  }
+
+  async deleteMedia(
+    organization_id: string,
+    school_id: string,
+    class_id: string,
+    key: string,
+    capsule_id: string,
+  ): Promise<boolean> {
+    // prismaにkeyがdeletableなものが存在するか確認
+    const isDeletable = await this.prisma.media.findFirst({
+      where: {
+        file_path: key,
+        deletable: true,
+      },
+    });
+
+    if (!isDeletable) {
+      throw new Error('Media is not deletable.');
+    }
+
+    // 1. S3にファイルが存在するか確認
+    try {
+      await this.s3
+        .headObject({
+          Bucket: process.env.AWS_S3_BUCKET_NAME!,
+          Key: key,
+        })
+        .promise();
+    } catch {
+      throw new Error('S3: File not found.');
+    }
+
+    // 2. Prismaでカプセル内にメディアが存在するか確認
+    const media = await this.prisma.media.findFirst({
+      where: {
+        file_path: key,
+        capsule_id,
+      },
+    });
+
+    if (!media) {
+      throw new Error('Media does not exist in the specified capsule.');
+    }
+
+    // 3. S3からファイルを削除
+    try {
+      await this.s3
+        .deleteObject({
+          Bucket: process.env.AWS_S3_BUCKET_NAME!,
+          Key: key,
+        })
+        .promise();
+    } catch {
+      throw new Error('Failed to delete file from S3.');
+    }
+
+    // 4. Mediaテーブルから削除
+    await this.prisma.media.delete({
+      where: { id: media.id },
+    });
+
+    return true;
   }
 }

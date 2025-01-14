@@ -72,7 +72,7 @@ const MediaAdd: React.FC<MediaAddProps> = ({ onClose }) => {
       )
 
       if (capsules !== null) {
-        const response = await uploadFiles({
+        await uploadFiles({
           variables: {
             organization_id: selectedOrganizationId,
             school_id: selectedSchoolId,
@@ -82,7 +82,6 @@ const MediaAdd: React.FC<MediaAddProps> = ({ onClose }) => {
             capsule_id: capsules[capsules.length - 1].id,
           },
         })
-        console.log(response)
       }
     } catch (error) {
       console.error(error)

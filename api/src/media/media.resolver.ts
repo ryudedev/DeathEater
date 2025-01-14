@@ -6,7 +6,6 @@ import { MediaFile } from './dto/file.output';
 export class MediaResolver {
   constructor(private mediaService: MediaService) {}
 
-  // organization_idとschool_idとclass_idとfilesを引数で受け取りS3にアップロードり、アップロードしたファイルのURLを返す
   @Mutation(() => [String])
   async uploadFiles(
     @Args('organization_id') organization_id: string,
@@ -14,7 +13,7 @@ export class MediaResolver {
     @Args('class_id') class_id: string,
     @Args('capsule_id') capsule_id: string,
     @Args('uploaded_by') uploaded_by: string,
-    @Args('deletable') deletable: boolean,
+    @Args('deletable', { type: () => [Boolean] }) deletable: boolean[],
     @Args('files', { type: () => [String] }) files: string[],
   ): Promise<string[]> {
     const response = await this.mediaService.uploadFiles(
@@ -44,5 +43,20 @@ export class MediaResolver {
     return response;
   }
 
-  // organization_idとschool_idとclass_idとfile_nameを引数で受け取りS3からファイルを削除する
+  @Mutation(() => Boolean)
+  async deleteMedia(
+    @Args('organization_id') organization_id: string,
+    @Args('school_id') school_id: string,
+    @Args('class_id') class_id: string,
+    @Args('key') key: string,
+    @Args('capsule_id') capsule_id: string,
+  ): Promise<boolean> {
+    return this.mediaService.deleteMedia(
+      organization_id,
+      school_id,
+      class_id,
+      key,
+      capsule_id,
+    );
+  }
 }

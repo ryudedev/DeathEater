@@ -73,6 +73,7 @@ export type MediaFile = {
   name: string
   size: number
   category: string
+  deletable: boolean
   uploadedAt: string
 }
 
@@ -91,4 +92,14 @@ export type StackProps = {
   category: string
   uploaded_by: string
   uploadedAt: string
+}
+
+export type MediaTypeProps = {
+  id?: number
+  name: string
+  type: string
+  filePath: string
+  deletable: boolean
+  uploadedAt: string
+  category?: string
 }

@@ -25,13 +25,11 @@ export const STACK_GET_FILES_IN_DIRECTORY = gql`
     $organization_id: String!
     $school_id: String!
     $class_id: String!
-    $capsule_id: String!
   ) {
     stackGetFilesInDirectory(
       organization_id: $organization_id
       school_id: $school_id
       class_id: $class_id
-      capsule_id: $capsule_id
     ) {
       key
       url
