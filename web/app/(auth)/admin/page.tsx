@@ -595,6 +595,9 @@ export default function ADMIN() {
                     image={stack.url}
                     uploaded_by={stack.uploaded_by}
                     type={stack.type}
+                    // stack.keyを削除する対象のものとして指定
+                    delKey={stack.key}
+                    user_id={stack.user_id}
                     key={stack.key}
                   />
                 ))}

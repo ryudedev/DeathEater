@@ -75,7 +75,7 @@ const UploadForm: React.FC<UploadFormProps> = ({
                 <p>{file.type}</p>
                 <input
                   type="checkbox"
-                  value={isCheck[index]}
+                  {...(isCheck[index] && { checked: true })}
                   onChange={() => handleCheck(index)}
                 />
                 {/* ファイル削除ボタン */}

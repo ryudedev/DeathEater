@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { S3 } from 'aws-sdk';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from 'src/auth/auth.service';
+import { HistoryService } from 'src/history/history.service';
 
 @Injectable()
 export class StacksService {
@@ -13,6 +14,7 @@ export class StacksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
+    private readonly history: HistoryService,
   ) {
     const region = process.env.AWS_REGION;
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
@@ -97,6 +99,12 @@ export class StacksService {
             user: { connect: { id: uploaded_by } },
           },
         });
+
+        await this.history.create({
+          capsule_id,
+          event: 'メディア追加を申請しました。',
+          user_id: uploaded_by,
+        });
       } catch (error) {
         console.error('Error uploading file:', error);
         throw new InternalServerErrorException('Failed to upload file to S3');
@@ -159,6 +167,7 @@ export class StacksService {
             size: item.Size,
             category,
             uploaded_by: `${uploaded_user.lastName} ${uploaded_user.firstName}`,
+            user_id: uploaded_user.id,
             uploadedAt: item.LastModified!.toISOString(),
           };
           return file;
@@ -171,6 +180,135 @@ export class StacksService {
       throw new InternalServerErrorException(
         'Failed to retrieve files from S3 directory',
       );
+    }
+  }
+
+  async stackMoveFile(
+    organization_id: string,
+    school_id: string,
+    class_id: string,
+    key: string,
+    capsule_id: string,
+    uploaded_by: string,
+    user_id: string,
+  ): Promise<StackFile> {
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    if (!bucketName) {
+      throw new Error('AWS_S3_BUCKET_NAME environment variable is missing');
+    }
+
+    const newKey = key.replace('stack/', '');
+    const params = {
+      Bucket: bucketName,
+      CopySource: `${bucketName}/${key}`,
+      Key: newKey,
+    };
+
+    try {
+      await this.s3.copyObject(params).promise();
+      await this.s3
+        .deleteObject({
+          Bucket: bucketName,
+          Key: key,
+        })
+        .promise();
+      console.log('ok');
+
+      const del_record = await this.prisma.stack.delete({
+        where: { file_path: key },
+      });
+
+      await this.prisma.media.create({
+        data: {
+          capsule: { connect: { id: del_record.capsule_id } },
+          deletable: true,
+          file_path: newKey,
+          file_type: newKey.split('.').pop(),
+          user: { connect: { id: del_record.uploaded_by } },
+        },
+      });
+
+      const signedUrlParams = {
+        Bucket: bucketName,
+        Key: newKey,
+        Expires: 1440, // 有効期限（秒）
+      };
+      const signedUrl = await this.s3.getSignedUrlPromise(
+        'getObject',
+        signedUrlParams,
+      );
+      const type = newKey.split('.').pop();
+      const name = newKey.split('/').pop();
+      const category = await getFileCategory(type!);
+      const size = (
+        await this.s3
+          .headObject({
+            Bucket: bucketName,
+            Key: newKey,
+          })
+          .promise()
+      ).ContentLength;
+      const file: StackFile = {
+        key: newKey,
+        url: signedUrl,
+        type,
+        name: name.split('.').shift(),
+        size: size,
+        category,
+        uploaded_by: uploaded_by,
+        user_id,
+        uploadedAt: new Date().toISOString(),
+      };
+
+      await this.history.create({
+        capsule_id,
+        event: '申請を許可しました。',
+        user_id,
+      });
+
+      return file;
+    } catch (error) {
+      console.error('Error moving file:', error);
+      throw new InternalServerErrorException('Failed to move file in S3');
+    }
+  }
+
+  async stackDeleteFile(
+    key: string,
+    capsule_id: string,
+    uploaded_by: string,
+  ): Promise<boolean> {
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    if (!bucketName) {
+      throw new Error('AWS_S3_BUCKET_NAME environment variable is missing');
+    }
+
+    try {
+      await this.s3
+        .deleteObject({
+          Bucket: bucketName,
+          Key: key,
+        })
+        .promise();
+
+      await this.prisma.stack.delete({
+        where: { file_path: key },
+      });
+
+      const log = await this.history.create({
+        capsule_id,
+        event: '申請を拒否しました。',
+        user_id: uploaded_by,
+      });
+
+      console.log(log);
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      throw new InternalServerErrorException('Failed to delete file in S3');
     }
   }
 }

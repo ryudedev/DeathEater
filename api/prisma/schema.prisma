@@ -138,7 +138,7 @@ model Media {
   // 削除可能かどうか
   deletable  Boolean
   // ファイルパス(例: "s3://bucket/media/file.mp4")
-  file_path  String
+  file_path  String @unique
   // ファイルタイプ(例: "video")
   file_type  String
   // アップロードユーザーID
@@ -157,7 +157,7 @@ model Stack {
   // Capsuleとの関連ID
   capsule_id  String
   // ファイルパス
-  file_path   String
+  file_path   String  @unique
   // ファイルタイプ
   file_type   String
   // アップロードユーザーID

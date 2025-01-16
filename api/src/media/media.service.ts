@@ -4,6 +4,7 @@ import { S3 } from 'aws-sdk';
 import { getFileCategory } from 'src/utils/file-category.utils';
 import { MediaFile } from './dto/file.output';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Media } from './dto/media.output';
 
 @Injectable()
 export class MediaService {
@@ -82,6 +83,12 @@ export class MediaService {
           ContentType: contentType,
         };
 
+        console.log('params: ', {
+          filePath,
+          contentType,
+          extension,
+        });
+
         if (extension === 'svg') {
           delete params.ContentEncoding;
         }
@@ -140,9 +147,13 @@ export class MediaService {
         return [];
       }
 
-      // 各ファイルに対して署名付きURLを生成
+      // サブディレクトリを除外
+      const filteredContents = data.Contents.filter(
+        (item) => !item.Key!.replace(prefix, '').includes('/'),
+      );
+
       const response = await Promise.all(
-        data.Contents.map(async (item) => {
+        filteredContents.map(async (item) => {
           const media_res = await this.prisma.media.findFirst({
             where: { file_path: item.Key! },
           });
@@ -166,10 +177,11 @@ export class MediaService {
             name: name.split('.').shift(),
             size: item.Size,
             category,
-            deletable: media_res?.deletable,
+            deletable: media_res?.deletable ?? false,
             uploaded_by: media_res?.uploaded_by,
             uploadedAt: item.LastModified!.toISOString(),
           };
+
           return file;
         }),
       );
@@ -189,7 +201,7 @@ export class MediaService {
     class_id: string,
     key: string,
     capsule_id: string,
-  ): Promise<boolean> {
+  ): Promise<Media> {
     // prismaにkeyがdeletableなものが存在するか確認
     const isDeletable = await this.prisma.media.findFirst({
       where: {
@@ -239,10 +251,10 @@ export class MediaService {
     }
 
     // 4. Mediaテーブルから削除
-    await this.prisma.media.delete({
+    const remove_media = await this.prisma.media.delete({
       where: { id: media.id },
     });
 
-    return true;
+    return remove_media;
   }
 }

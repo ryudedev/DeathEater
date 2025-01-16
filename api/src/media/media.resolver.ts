@@ -1,6 +1,7 @@
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { MediaService } from './media.service';
 import { MediaFile } from './dto/file.output';
+import { Media } from './dto/media.output';
 
 @Resolver()
 export class MediaResolver {
@@ -40,17 +41,18 @@ export class MediaResolver {
       school_id,
       class_id,
     );
+    // console.log(response);
     return response;
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Media)
   async deleteMedia(
     @Args('organization_id') organization_id: string,
     @Args('school_id') school_id: string,
     @Args('class_id') class_id: string,
     @Args('key') key: string,
     @Args('capsule_id') capsule_id: string,
-  ): Promise<boolean> {
+  ): Promise<Media> {
     return this.mediaService.deleteMedia(
       organization_id,
       school_id,

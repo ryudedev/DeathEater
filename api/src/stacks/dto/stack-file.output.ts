@@ -24,5 +24,8 @@ export class StackFile {
   uploaded_by: string;
 
   @Field()
+  user_id: string;
+
+  @Field()
   uploadedAt: string;
 }

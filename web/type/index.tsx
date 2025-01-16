@@ -91,6 +91,7 @@ export type StackProps = {
   size: number
   category: string
   uploaded_by: string
+  user_id: string
   uploadedAt: string
 }
 
