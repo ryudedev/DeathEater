@@ -4,18 +4,20 @@ import Header from '@/components/header'
 import Logs from '@/components/logs'
 import TimeLimit from '@/components/timelimit'
 import { useDashboardStore } from '@/store'
-import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Dashboard() {
-  const { setInit, error, loading, capsules, user } = useDashboardStore()
-
-  // 初期化処理を1回だけ実行
-  useEffect(() => {
-    setInit()
-  }, [setInit])
+  const { error, loading, capsules, user } = useDashboardStore()
+  const router = useRouter()
 
   if (loading) return <p>Loading...</p>
-  if (error) return <p>Error: {error.message}</p>
+  if (error) {
+    if (error.message === 'Email not found in cookies.') {
+      router.push('/')
+    } else {
+      return <p>Error: {error.message}</p>
+    }
+  }
 
   return (
     <>

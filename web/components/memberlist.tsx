@@ -13,9 +13,9 @@ type MemberListProps = {
 
 function RoleIcon({ role }: { role: MemberItem['role'] }) {
   const roleToSrc = {
-    ADMIN: '/leader.svg',
-    LEADER: '/subleader.svg',
-    MEMBER: '/member.svg',
+    ADMIN: '/images/leader.svg',
+    LEADER: '/images/subleader.svg',
+    MEMBER: '/images/member.svg',
   }
   return <Image src={roleToSrc[role]} alt={role} width={50} height={50} />
 }

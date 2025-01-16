@@ -7,27 +7,27 @@ import MenuItem from './menuitem'
 const Menu: React.FC = () => {
   const menuItems = [
     {
-      iconSrc: '/document.svg',
+      iconSrc: '/images/document.svg',
       title: 'ログ',
-      arrowSrc: '/arrow-right-blue.svg',
+      arrowSrc: '/images/arrow-right-blue.svg',
       link: '/log',
     },
     {
-      iconSrc: '/gallery.svg',
+      iconSrc: '/images/gallery.svg',
       title: 'メディア一覧',
-      arrowSrc: '/arrow-right-blue.svg',
+      arrowSrc: '/images/arrow-right-blue.svg',
       link: '/media',
     },
     {
-      iconSrc: '/two-user.svg',
+      iconSrc: '/images/two-user.svg',
       title: 'メンバー',
-      arrowSrc: '/arrow-right-blue.svg',
+      arrowSrc: '/images/arrow-right-blue.svg',
       link: '/members',
     },
     {
-      iconSrc: '/box.svg',
+      iconSrc: '/images/box.svg',
       title: '容量',
-      arrowSrc: '/arrow-right-blue.svg',
+      arrowSrc: '/images/arrow-right-blue.svg',
       link: '/storage',
     },
   ]

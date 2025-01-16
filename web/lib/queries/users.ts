@@ -23,6 +23,7 @@ export const GET_USER = gql`
             size
             class_id
             release_date
+            url
             upload_deadline
           }
           school {

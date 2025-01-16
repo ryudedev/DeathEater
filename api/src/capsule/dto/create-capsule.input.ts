@@ -15,5 +15,8 @@ export class CreateCapsuleInput {
   release_date: Date;
 
   @Field()
+  url: string;
+
+  @Field()
   upload_deadline: Date;
 }
