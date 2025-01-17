@@ -17,29 +17,46 @@ export default function Live({ params }: LiveProps) {
   const [isOpened, setIsOpened] = useState<boolean>(false)
   const { roomId } = params
 
-  useEffect(() => {
-    if (!capsules) return
-    const new_capsule = capsules[capsules.length - 1]
-    if (roomId !== new_capsule.url) {
-      router.push('/dashboard')
-    }
-    const release_date = new Date(new_capsule.release_date!)
-    if (release_date.getTime() < new Date().getTime()) {
-      setIsOpened(true)
-    }
-  }, [capsules])
+  console.log(isOpened)
 
-  if (!isOpened) {
-    return (
-      <div>
-        <CapsuleOpen isTransition seconds={2000} roomId={roomId} />
-      </div>
-    )
+  useEffect(() => {
+    console.log(capsules)
+    if (capsules) {
+      const currentCapsule = capsules.find((capsule) => capsule.url === roomId)
+      console.log(currentCapsule)
+
+      if (!currentCapsule) {
+        router.push('/dashboard')
+        return
+      }
+
+      const release_date = new Date(currentCapsule.release_date!)
+      const currentDate = new Date()
+
+      // 開封可能時刻の確認
+      if (release_date.getTime() < currentDate.getTime()) {
+        setIsOpened(true)
+      }
+
+      // ルームが有効かどうかの確認（例：24時間以内）
+      const timeLimit = 24 * 60 * 60 * 1000 // 24時間（ミリ秒）
+      if (currentDate.getTime() - release_date.getTime() > timeLimit) {
+        console.log(currentDate.getTime() - release_date.getTime() > timeLimit)
+        router.push('/dashboard')
+        return
+      }
+    }
+  }, [capsules, roomId, router])
+
+  // Loading状態の表示
+  if (!capsules) {
+    return <div>Loading...</div>
   }
 
+  // CapsuleOpenコンポーネントのレンダリング
   return (
-    <div>
-      <CapsuleOpen isTransition seconds={2000} roomId={roomId} />
+    <div className="w-full h-screen">
+      <CapsuleOpen isTransition={true} seconds={2000} roomId={roomId} />
     </div>
   )
 }

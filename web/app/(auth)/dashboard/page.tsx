@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 export default function Dashboard() {
   const { error, loading, capsules, user } = useDashboardStore()
   const router = useRouter()
+  console.log(capsules)
 
   if (loading) return <p>Loading...</p>
   if (error) {
