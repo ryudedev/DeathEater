@@ -44,7 +44,7 @@ export type Capsule = {
   id?: string
   name?: string
   class_id?: string
-  size?: string
+  size?: 'small' | 'medium' | 'large'
   release_date?: Date
   upload_deadline?: Date
   url: string
@@ -106,4 +106,8 @@ export type MediaTypeProps = {
   deletable: boolean
   uploadedAt: string
   category?: string
+}
+
+export interface GetFilesInDirectoryResponse {
+  getFilesInDirectory: MediaFile[]
 }

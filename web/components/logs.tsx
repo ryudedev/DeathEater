@@ -59,6 +59,8 @@ export default function Logs({ capsule_id, filterUserId = null }: LogsProps) {
             (log.user?.role === 'ADMIN' &&
               getUserIdFromHistoryId(log.history_id!) === filterUserId),
         )
+        // 逆順
+        .reverse()
         .map((log) => (
           <div key={log.id}>
             <div className="flex flex-col gap-2">

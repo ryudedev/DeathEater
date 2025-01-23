@@ -1,5 +1,9 @@
 'use client'
-import { STACK_UPLOAD_FILE } from '@/lib/queries/stacks'
+import { GET_FILES_IN_DIRECTORY } from '@/lib/queries/media'
+import {
+  STACK_GET_FILES_IN_DIRECTORY,
+  STACK_UPLOAD_FILE,
+} from '@/lib/queries/stacks'
 import { useDashboardStore } from '@/store'
 import { useMutation } from '@apollo/client'
 import { useState } from 'react'
@@ -23,18 +27,51 @@ interface MediaAddProps {
 const MediaAdd: React.FC<MediaAddProps> = ({ onClose }) => {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [fileError, setFileError] = useState<boolean | null>(null)
-  const [uploadFiles] = useMutation(STACK_UPLOAD_FILE)
   const {
     user,
     capsules,
     selectedOrganizationId,
     selectedSchoolId,
     selectedClassId,
+    setMediaList,
   } = useDashboardStore()
+
+  // Safely get the last capsule ID
+  const lastCapsuleId =
+    capsules && capsules.length > 0 ? capsules[capsules.length - 1].id : null
+
+  const [uploadFiles] = useMutation(STACK_UPLOAD_FILE, {
+    refetchQueries: [
+      GET_FILES_IN_DIRECTORY,
+      {
+        query: STACK_GET_FILES_IN_DIRECTORY,
+        variables: {
+          organization_id: selectedOrganizationId,
+          school_id: selectedSchoolId,
+          class_id: selectedClassId,
+          capsule_id: lastCapsuleId,
+        },
+      },
+    ],
+    onCompleted: () => {
+      if (
+        selectedOrganizationId &&
+        selectedSchoolId &&
+        selectedClassId &&
+        lastCapsuleId
+      ) {
+        setMediaList(
+          selectedOrganizationId,
+          selectedSchoolId,
+          selectedClassId,
+          lastCapsuleId,
+        )
+      }
+    },
+  })
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      // imageUrlはbase64エンコードされたファイルのURL
       const newPhotos = Array.from(event.target.files).map((file, index) => ({
         id: `${photos.length + index + 1}`,
         fileData: file,
@@ -71,17 +108,20 @@ const MediaAdd: React.FC<MediaAddProps> = ({ onClose }) => {
         ),
       )
 
-      if (capsules !== null) {
-        await uploadFiles({
+      if (capsules !== null && lastCapsuleId) {
+        const res = await uploadFiles({
           variables: {
             organization_id: selectedOrganizationId,
             school_id: selectedSchoolId,
             class_id: selectedClassId,
             files: base64Files,
             uploaded_by: user?.id,
-            capsule_id: capsules[capsules.length - 1].id,
+            capsule_id: lastCapsuleId,
           },
         })
+        if (res.data) {
+          onClose()
+        }
       }
     } catch (error) {
       console.error(error)
@@ -127,14 +167,13 @@ const MediaAdd: React.FC<MediaAddProps> = ({ onClose }) => {
           </div>
         </div>
 
-        {/* 写真一覧のコンテナ */}
         <div className="w-full overflow-hidden p-3">
           <div className="w-full overflow-x-auto">
             <div
               className={`flex gap-2 ${photos.length ? 'justify-start' : 'justify-center'}`}
               style={{
                 minWidth: 'min-content',
-                paddingBottom: '8px', // スクロールバー用の余白
+                paddingBottom: '8px',
               }}
             >
               {photos.length ? (

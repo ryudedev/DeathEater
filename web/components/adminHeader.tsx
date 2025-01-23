@@ -65,7 +65,12 @@ export default function AdminHeader() {
 
   return (
     <div className="w-full flex flex-row justify-between px-5 py-[15px] bg-primary">
-      <Image src="/admin-reminico.svg" alt="logo" width={89} height={30} />
+      <Image
+        src="/images/admin-reminico.svg"
+        alt="logo"
+        width={89}
+        height={30}
+      />
       <div className="flex gap-4 items-center relative">
         <div
           className="group text-white border border-white bg-primary rounded-lg flex gap-2.5 px-4 py-2 hover:bg-white hover:text-primary duration-300 font-bold items-center hover:cursor-pointer"
@@ -114,7 +119,12 @@ export default function AdminHeader() {
                 </p>
               </div>
               <div className="flex flex-row">
-                <Image src="/search.svg" alt="検索" width={24} height={24} />
+                <Image
+                  src="/images/search.svg"
+                  alt="検索"
+                  width={24}
+                  height={24}
+                />
                 <input
                   type="text"
                   className="focus:outline-none focus:ring-0 rounded px-4 py-2"

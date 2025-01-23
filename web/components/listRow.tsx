@@ -1,11 +1,14 @@
-import { STACK_DELETE_MEDIA, STACK_MOVE_FILE } from '@/lib/queries/stacks'
+import {
+  STACK_DELETE_MEDIA,
+  STACK_GET_FILES_IN_DIRECTORY,
+  STACK_MOVE_FILE,
+} from '@/lib/queries/stacks'
 import { useDashboardStore } from '@/store'
 import { useMutation } from '@apollo/client'
 import Image from 'next/image'
 import CheckIcon from './icon/CheckIcon'
 import DeleteIcon from './icon/DeleteIcon'
 
-// 引数の型を宣言する
 type ListRowProps = {
   image: string
   uploaded_by: string
@@ -21,14 +24,75 @@ export default function ListRow({
   delKey,
   user_id,
 }: ListRowProps) {
-  const [deleteMedia] = useMutation(STACK_DELETE_MEDIA)
-  const [moveMedia] = useMutation(STACK_MOVE_FILE)
   const {
     selectedOrganizationId,
     selectedSchoolId,
     selectedClassId,
     capsules,
+    setMediaList,
   } = useDashboardStore()
+
+  // Get the last capsule safely
+  const lastCapsuleId =
+    capsules && capsules.length > 0 ? capsules[capsules.length - 1].id : null
+
+  const [deleteMedia] = useMutation(STACK_DELETE_MEDIA, {
+    refetchQueries: [
+      {
+        query: STACK_GET_FILES_IN_DIRECTORY,
+        variables: {
+          organization_id: selectedOrganizationId,
+          school_id: selectedSchoolId,
+          class_id: selectedClassId,
+          capsule_id: lastCapsuleId,
+        },
+      },
+    ],
+    onCompleted: () => {
+      if (
+        selectedOrganizationId &&
+        selectedSchoolId &&
+        selectedClassId &&
+        lastCapsuleId
+      ) {
+        setMediaList(
+          selectedOrganizationId,
+          selectedSchoolId,
+          selectedClassId,
+          lastCapsuleId,
+        )
+      }
+    },
+  })
+
+  const [moveMedia] = useMutation(STACK_MOVE_FILE, {
+    refetchQueries: [
+      {
+        query: STACK_GET_FILES_IN_DIRECTORY,
+        variables: {
+          organization_id: selectedOrganizationId || '',
+          school_id: selectedSchoolId,
+          class_id: selectedClassId,
+          capsule_id: lastCapsuleId,
+        },
+      },
+    ],
+    onCompleted: () => {
+      if (
+        selectedOrganizationId &&
+        selectedSchoolId &&
+        selectedClassId &&
+        lastCapsuleId
+      ) {
+        setMediaList(
+          selectedOrganizationId,
+          selectedSchoolId,
+          selectedClassId,
+          lastCapsuleId,
+        )
+      }
+    },
+  })
 
   const handleDelete = async () => {
     try {
@@ -36,13 +100,14 @@ export default function ListRow({
         !selectedOrganizationId ||
         !selectedSchoolId ||
         !selectedClassId ||
-        !capsules
+        !lastCapsuleId
       )
         return
+
       await deleteMedia({
         variables: {
           key: delKey,
-          capsule_id: capsules[capsules.length - 1].id,
+          capsule_id: lastCapsuleId,
           uploaded_by: user_id,
         },
       })
@@ -57,17 +122,17 @@ export default function ListRow({
         !selectedOrganizationId ||
         !selectedSchoolId ||
         !selectedClassId ||
-        !capsules
+        !lastCapsuleId
       )
         return
-      console.log(user_id)
+
       await moveMedia({
         variables: {
           organization_id: selectedOrganizationId,
           school_id: selectedSchoolId,
           class_id: selectedClassId,
           key: delKey,
-          capsule_id: capsules[capsules.length - 1].id,
+          capsule_id: lastCapsuleId,
           uploaded_by: uploaded_by,
           user_id,
         },
@@ -76,6 +141,7 @@ export default function ListRow({
       console.error('Error deleting file:', error)
     }
   }
+
   return (
     <div className="flex flex-row items-center space-x-4 hover:bg-hover p-2 rounded-2xl cursor-pointer">
       <Image
