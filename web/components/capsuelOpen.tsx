@@ -28,6 +28,7 @@ const AudioStateManager = {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       this.localStream = stream
+      console.log('Local stream active:', stream.active)
       return stream
     } catch (error) {
       console.error('マイクアクセスエラー:', error)
@@ -38,11 +39,15 @@ const AudioStateManager = {
   stopAudio() {
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => track.stop())
+      console.log('Stopping local stream tracks...')
       this.localStream = null
+    } else {
+      console.warn('Local stream already null.')
     }
     this.peerConnections.forEach((pc) => pc.close())
     this.peerConnections.clear()
   },
+
   debugAudioLevels() {
     if (!this.localStream) {
       console.log('🎤 No local stream available')
@@ -66,8 +71,6 @@ const AudioStateManager = {
       analyser.getByteFrequencyData(array)
       const arraySum = array.reduce((a, value) => a + value, 0)
       const average = arraySum / array.length
-      console.log('🎤 Microphone volume:', Math.round(average))
-      // 音量が一定以上なら色を変えて表示
       if (average > 30) {
         console.log('%c🔊 Active Audio!', 'color: #00ff00')
       }
@@ -80,7 +83,6 @@ const AudioStateManager = {
     }
   },
 
-  // RTCPeerConnection の状態をモニタリング
   monitorPeerConnection(pc: RTCPeerConnection, label: string) {
     pc.oniceconnectionstatechange = () => {
       console.log(`💻 [${label}] ICE State:`, pc.iceConnectionState)
@@ -96,32 +98,30 @@ const AudioStateManager = {
 
     pc.ontrack = (event) => {
       console.log(`💻 [${label}] Track received:`, event.track.kind)
-
-      // 受信した音声トラックのレベルをモニタリング
       if (event.track.kind === 'audio') {
-        const audioContext = new AudioContext()
-        const analyser = audioContext.createAnalyser()
-        const source = audioContext.createMediaStreamSource(event.streams[0])
-        const scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1)
-
-        analyser.smoothingTimeConstant = 0.8
-        analyser.fftSize = 1024
-
-        source.connect(analyser)
-        analyser.connect(scriptProcessor)
-        scriptProcessor.connect(audioContext.destination)
-
-        scriptProcessor.onaudioprocess = function () {
-          const array = new Uint8Array(analyser.frequencyBinCount)
-          analyser.getByteFrequencyData(array)
-          const arraySum = array.reduce((a, value) => a + value, 0)
-          const average = arraySum / array.length
-          console.log(
-            `🔊 [${label}] Received Audio Level:`,
-            Math.round(average),
-          )
-        }
+        this.monitorRemoteAudio(event.streams[0], label)
       }
+    }
+  },
+
+  monitorRemoteAudio(stream: MediaStream, label: string) {
+    const audioContext = new AudioContext()
+    const analyser = audioContext.createAnalyser()
+    const source = audioContext.createMediaStreamSource(stream)
+    const scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1)
+
+    analyser.smoothingTimeConstant = 0.8
+    analyser.fftSize = 1024
+
+    source.connect(analyser)
+    analyser.connect(scriptProcessor)
+    scriptProcessor.connect(audioContext.destination)
+    scriptProcessor.onaudioprocess = function () {
+      const array = new Uint8Array(analyser.frequencyBinCount)
+      analyser.getByteFrequencyData(array)
+      const arraySum = array.reduce((a, value) => a + value, 0)
+      const average = arraySum / array.length
+      console.log(`🔊 [${label}] Received Audio Level:`, Math.round(average))
     }
   },
 }
@@ -151,10 +151,22 @@ export default function CapsuleOpen({
   const setupPeerConnection = useCallback(
     async (targetUserId: string) => {
       const peerConnection = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun.l.google.com:5349' },
+          { urls: 'stun:stun1.l.google.com:3478' },
+          { urls: 'stun:stun1.l.google.com:5349' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:5349' },
+          { urls: 'stun:stun3.l.google.com:3478' },
+          { urls: 'stun:stun3.l.google.com:5349' },
+          { urls: 'stun:stun4.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:5349' },
+        ],
       })
 
-      // デバッグモニタリングを追加
+      console.log('PeerConnection created:', peerConnection)
+
       AudioStateManager.monitorPeerConnection(
         peerConnection,
         `Peer-${targetUserId}`,
@@ -162,6 +174,7 @@ export default function CapsuleOpen({
 
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log('ICE candidate:', event.candidate)
           socketRef.current?.emit('ice-candidate', {
             roomId,
             targetUserId,
@@ -171,10 +184,13 @@ export default function CapsuleOpen({
       }
 
       peerConnection.ontrack = (event) => {
+        console.log('Track received:', event.track.kind)
         const [remoteStream] = event.streams
         const audio = new Audio()
         audio.srcObject = remoteStream
-        audio.play()
+        audio
+          .play()
+          .catch((error) => console.error('Audio playback error:', error))
         audioRefs.current[targetUserId] = audio
       }
 
@@ -231,16 +247,22 @@ export default function CapsuleOpen({
       try {
         const stream = await AudioStateManager.startAudio()
         if (stream) {
-          // マイクレベルのモニタリングを開始
           const cleanup = AudioStateManager.debugAudioLevels()
           socketRef.current?.emit('startVoice', {
             roomId,
             userId: user.id,
+            stream: stream.id,
           })
+
+          stream.getTracks().forEach((track) => {
+            track.addEventListener('ended', () => {
+              console.log(`Track ${track.kind} ended`)
+              checkStreamActive(stream)
+            })
+          })
+
           setMicEnabled(true)
           console.log('🎤 Microphone enabled')
-
-          // コンポーネントのクリーンアップ時に監視を停止
           return () => cleanup?.()
         }
       } catch (error) {
@@ -258,13 +280,14 @@ export default function CapsuleOpen({
     const newSpeakerState = !speakerEnabled
     setSpeakerEnabled(newSpeakerState)
     Object.values(audioRefs.current).forEach((audio) => {
-      audio.muted = newSpeakerState
+      audio.muted = !newSpeakerState
     })
   }
 
   useEffect(() => {
     if (!user?.id) return
 
+    console.log('ソケットを初期化しています。ユーザー:', user.id)
     const socket = io(
       process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001',
       {
@@ -282,16 +305,63 @@ export default function CapsuleOpen({
       setCapsuleStates(state)
     })
 
-    socket.on('newUserStream', async ({ userId }) => {
+    socket.on('newUserStream', async ({ userId, streamId }) => {
+      console.log('新しいユーザーストリームを受信:', { userId, streamId })
+
       const pc = await setupPeerConnection(userId)
+      try {
+        const offer = await pc.createOffer()
+        await pc.setLocalDescription(offer)
+
+        socket.emit('webrtc-offer', {
+          roomId,
+          targetUserId: userId,
+          offer: offer,
+        })
+      } catch (error) {
+        console.error('オファー作成エラー:', error)
+      }
+
       if (AudioStateManager.localStream) {
         AudioStateManager.localStream.getTracks().forEach((track) => {
+          console.log(`トラックを追加: ${track.kind}`)
           pc.addTrack(track, AudioStateManager.localStream!)
         })
+      } else {
+        console.warn('ローカルストリームが存在しません')
+      }
+    })
+
+    socket.on('voiceStreamConfirmation', (data) => {
+      if (data.received) {
+        console.log('🎉 サーバーが音声ストリームを受信しました')
+      }
+    })
+
+    socket.on('webrtc-answer', async ({ userId, answer }) => {
+      const pc = peerConnectionsRef.current.get(userId)
+      if (pc) {
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(answer))
+        } catch (error) {
+          console.error('リモート説明の設定エラー:', error)
+        }
+      }
+    })
+
+    socket.on('ice-candidate', async ({ userId, candidate }) => {
+      const pc = peerConnectionsRef.current.get(userId)
+      if (pc) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate))
+        } catch (error) {
+          console.error('ICEキャンディデートの追加エラー:', error)
+        }
       }
     })
 
     socket.on('userStreamStopped', ({ userId }) => {
+      console.log('ユーザーストリームが停止:', userId)
       peerConnectionsRef.current.get(userId)?.close()
       peerConnectionsRef.current.delete(userId)
       if (audioRefs.current[userId]) {
@@ -300,7 +370,6 @@ export default function CapsuleOpen({
       }
     })
 
-    // Save refs for cleanup
     const currentPeerConnections = peerConnectionsRef.current
     const currentAudioRefs = audioRefs.current
 
@@ -350,4 +419,8 @@ export default function CapsuleOpen({
       </div>
     </div>
   )
+}
+
+function checkStreamActive(stream: MediaStream) {
+  console.log(`Stream active: ${stream.active}`)
 }

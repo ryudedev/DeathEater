@@ -50,7 +50,12 @@ export class CapsuleGateway
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(client: Socket, data: { roomId: string; userId: string }) {
+    console.log('ユーザーがルームに参加:', data);
     this.joinRoom(client, data.roomId, data.userId);
+    client.emit('join', {
+      message: 'ルームに参加しました',
+      roomId: data.roomId,
+    });
   }
 
   @SubscribeMessage('joinVoiceRoom')
@@ -75,15 +80,27 @@ export class CapsuleGateway
   @SubscribeMessage('startVoice')
   handleStartVoice(
     client: Socket,
-    data: { roomId: string; userId: string; stream: MediaStream },
+    data: { roomId: string; userId: string; stream: string }, // ストリームIDを受け取る
   ) {
-    const { roomId, userId, stream } = data;
-    this.userStreams.set(userId, stream);
+    console.log('サーバーが startVoice イベントを受信:', data);
 
-    // ルームの他のメンバーに新しいストリームを通知
+    const { roomId, userId, stream } = data;
+    if (!stream) {
+      console.warn('Stream data is missing.');
+      return;
+    }
+
+    // クライアントに新しいストリームを通知
     client.to(roomId).emit('newUserStream', {
       userId: userId,
-      stream: stream,
+      streamId: stream, // ストリーム ID を通知
+    });
+
+    client.emit('voiceStreamConfirmation', { received: true });
+    console.log('サーバーが voiceStream イベントを送信:', {
+      roomId,
+      userId,
+      stream,
     });
   }
 
