@@ -52,6 +52,10 @@ export type Capsule = {
   updated_at?: Date
 }
 
+export type UsageProps = {
+  [category: string]: number
+}
+
 export type UserClassesWithoutCapsules = Omit<UserClasses, 'class'> & {
   class: Omit<Class, 'capsules'>
 }

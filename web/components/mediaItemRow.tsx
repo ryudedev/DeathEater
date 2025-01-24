@@ -19,8 +19,25 @@ export default function MediaItemRow({
     selectedClassId,
     selectedSchoolId,
     capsules,
+    setMediaList,
   } = useDashboardStore()
-  const [deleteMedia] = useMutation(DELETE_MEDIA)
+  const [deleteMedia] = useMutation(DELETE_MEDIA, {
+    onCompleted: () => {
+      if (
+        capsules?.length &&
+        selectedOrganizationId &&
+        selectedSchoolId &&
+        selectedClassId
+      ) {
+        setMediaList(
+          selectedOrganizationId,
+          selectedSchoolId,
+          selectedClassId,
+          capsules[capsules.length - 1].id!,
+        )
+      }
+    },
+  })
 
   const handleDelete = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation()
@@ -31,8 +48,8 @@ export default function MediaItemRow({
           organization_id: selectedOrganizationId,
           school_id: selectedSchoolId,
           class_id: selectedClassId,
-          capsule_id: capsules[0].id,
           key: filePath,
+          capsule_id: capsules[0].id,
         },
       })
     } catch (error) {

@@ -6,9 +6,10 @@ import PlusIcon from '@/components/icon/plusIcon'
 import MediaItemRow from '@/components/mediaItemRow'
 import UploadForm from '@/components/UploadForm/ImageUploadForm' // UploadFormコンポーネントのインポート
 import UsageAlert from '@/components/usageAlert'
+import useUsagePercentage from '@/hooks/useUsagePercentage'
 import { UPLOAD_FILE } from '@/lib/queries/media'
 import { useDashboardStore } from '@/store'
-import { MediaFile } from '@/type'
+import { MediaFile, UsageProps } from '@/type'
 import { useMutation } from '@apollo/client'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -36,8 +37,39 @@ export default function Type({ params: { type } }: TypeProps) {
     selectedSchoolId,
     selectedClassId,
     mediaList,
+    setMediaList,
   } = useDashboardStore()
-  const [uploadFile] = useMutation(UPLOAD_FILE)
+
+  // カラムの総合使用割合
+  const [usagePercentage, setUsagePercentage] = useState<UsageProps>({})
+  const { calculateUsagePercentage } = useUsagePercentage()
+
+  useEffect(() => {
+    if (capsules) {
+      const usage = calculateUsagePercentage(
+        capsules[capsules.length - 1].size!,
+      )
+      setUsagePercentage(usage)
+    }
+  }, [calculateUsagePercentage, capsules])
+
+  const [uploadFile] = useMutation(UPLOAD_FILE, {
+    onCompleted: () => {
+      if (
+        selectedOrganizationId &&
+        selectedSchoolId &&
+        selectedClassId &&
+        capsules
+      ) {
+        setMediaList(
+          selectedOrganizationId,
+          selectedSchoolId,
+          selectedClassId,
+          capsules[capsules.length - 1].id!,
+        )
+      }
+    },
+  })
 
   useEffect(() => {
     switch (type) {
@@ -131,7 +163,9 @@ export default function Type({ params: { type } }: TypeProps) {
             {alertMessage}
           </div>
         )}
-        <UsageAlert totalUsage={90} />
+        {usagePercentage[type] >= 60 && (
+          <UsageAlert totalUsage={usagePercentage[type]} />
+        )}
         <div
           className="flex flex-row gap-2.5 cursor-pointer"
           onClick={() => router.back()}

@@ -59,6 +59,10 @@ export const DELETE_MEDIA = gql`
       class_id: $class_id
       capsule_id: $capsule_id
       key: $key
-    )
+    ) {
+      id
+      file_path
+      file_type
+    }
   }
 `
