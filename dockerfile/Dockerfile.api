@@ -17,10 +17,6 @@ COPY --from=deps /api/node_modules ./node_modules
 # Generate Prisma Client
 # Check if schema.prisma exists and then generate Prisma Client
 RUN if [ -f "prisma/schema.prisma" ]; then pnpm dlx prisma generate; else echo "schema.prisma not found"; fi
-
-# Prisma Clientの生成
-RUN pnpm dlx prisma generate
-
 # アプリケーションのビルド
 RUN pnpm build
 
@@ -45,6 +41,6 @@ COPY --from=builder /api/setup.sh ./setup.sh
 COPY --from=builder /api/node_modules/@prisma ./node_modules/@prisma
 
 # Give execute permissions to setup.sh in the final stage
-RUN chmod +x ./setup.sh
 EXPOSE 3001
+RUN chmod +x ./setup.sh
 CMD [ "pnpm", "start:prisma:debug" ]

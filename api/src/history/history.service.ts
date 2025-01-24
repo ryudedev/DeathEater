@@ -16,7 +16,15 @@ export class HistoryService {
   async create(createHistoryInput: CreateHistoryInput): Promise<HistoryOutput> {
     try {
       const record = await this.prisma.history.create({
-        data: createHistoryInput,
+        data: {
+          event: createHistoryInput.event,
+          user: {
+            connect: { id: createHistoryInput.user_id },
+          },
+          capsule: {
+            connect: { id: createHistoryInput.capsule_id },
+          },
+        },
       });
       return record;
     } catch (error) {

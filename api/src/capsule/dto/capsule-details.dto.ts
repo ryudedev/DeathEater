@@ -29,6 +29,9 @@ export class CapsuleDetailsDto {
   @Field()
   size: string;
 
+  @Field()
+  url: string;
+
   @Field(() => MediaStatsDto) // メディア統計を持つサブタイプ
   mediaStats: MediaStatsDto;
 

@@ -3,8 +3,10 @@ import { calculateDateDifference } from '@/lib/date'
 import { Capsule } from '@/type'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Button from './button'
 import Card from './card'
+import MediaAdd from './mediaAdd'
 import MediaBar from './mediaBar'
 import { MediaItem, mediaType } from './mediaItem'
 
@@ -15,6 +17,7 @@ type CapsuleStorageProps = {
 
 export const CapsuleStorage = ({ capsules, type }: CapsuleStorageProps) => {
   const router = useRouter()
+  const [isUpload, setIsUpload] = useState<boolean>(false)
   const mediaArray = [
     mediaType.image,
     mediaType.video,
@@ -26,51 +29,68 @@ export const CapsuleStorage = ({ capsules, type }: CapsuleStorageProps) => {
     if (type === 'transition') {
       router.push('/capsules')
     } else {
+      setIsUpload(true)
     }
   }
 
+  const handleCloseMediaAdd = () => {
+    setIsUpload(false)
+  }
+
   return (
-    <Card flexDir="row" gap={2.5} className="p-6 items-center">
-      <Button
-        type="button"
-        className="absolute -bottom-10 -right-10 w-[78px] h-[78px] items-start justify-start px-4 py-4"
-        onClick={onClick}
-      >
-        <Image
-          src={type === 'transition' ? '/arrow-right-white.svg' : '/Plus.svg'}
-          alt="next page"
-          width={24}
-          height={24}
-          className=""
-        />
-      </Button>
-      <div className="flex-1 flex px-2.5 py-2.5 justify-center">
-        <Image
-          src="/Capsule.svg"
-          alt="Capsule"
-          width={148}
-          height={61}
-          className="w-full h-full max-h-[148px]"
-        />
-      </div>
-      <div className="flex-1 flex flex-col gap-2.5">
-        <h3 className="text-xl font-bold">
-          {capsules[capsules.length - 1].name}
-        </h3>
-        <div className="flex flex-col gap-1 justify-end">
-          <MediaBar image={24} audio={8} video={18} text={13} free={37} />
-          <span className="text-description">
-            {calculateDateDifference(
-              new Date(capsules[capsules.length - 1].release_date!),
-            )}
-          </span>
+    <>
+      {isUpload && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+          <MediaAdd onClose={handleCloseMediaAdd} />
         </div>
-        <div className="flex flex-wrap gap-[18px]">
-          {mediaArray.map((type) => (
-            <MediaItem type={type} key={type} />
-          ))}
+      )}
+
+      <Card flexDir="row" gap={2.5} className="p-6 items-center">
+        <Button
+          type="button"
+          className="absolute -bottom-10 -right-10 w-[78px] h-[78px] items-start justify-start px-4 py-4"
+          onClick={onClick}
+        >
+          <Image
+            src={
+              type === 'transition'
+                ? '/images/arrow-right-white.svg'
+                : '/images/Plus.svg'
+            }
+            alt="next page"
+            width={24}
+            height={24}
+            className=""
+          />
+        </Button>
+        <div className="flex-1 flex px-2.5 py-2.5 justify-center">
+          <Image
+            src="/images/Capsule.svg"
+            alt="Capsule"
+            width={148}
+            height={61}
+            className="w-full h-full max-h-[148px]"
+          />
         </div>
-      </div>
-    </Card>
+        <div className="flex-1 flex flex-col gap-2.5">
+          <h3 className="text-xl font-bold">
+            {capsules[capsules.length - 1].name}
+          </h3>
+          <div className="flex flex-col gap-1 justify-end">
+            <MediaBar image={24} audio={8} video={18} text={13} free={37} />
+            <span className="text-description">
+              {calculateDateDifference(
+                new Date(capsules[capsules.length - 1].release_date!),
+              )}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-[18px]">
+            {mediaArray.map((type) => (
+              <MediaItem type={type} key={type} />
+            ))}
+          </div>
+        </div>
+      </Card>
+    </>
   )
 }

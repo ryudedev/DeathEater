@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({
     <header className="relative flex items-center justify-between w-full h-[54px] bg-white p-2 rounded-lg">
       {showBackButton ? (
         <Image
-          src="/arrow-left-blue.svg"
+          src="/images/arrow-left-blue.svg"
           alt="Back Arrow"
           onClick={handleBackClick}
           width={24}
@@ -71,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({
             onClick={toggleMenu}
           >
             <Image
-              src={user.avatar || '/default-user.svg'}
+              src={user.avatar || '/images/sdefault-user.svg'}
               alt="User Icon"
               width={40}
               height={40}

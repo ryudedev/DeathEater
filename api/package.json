@@ -10,7 +10,7 @@
     "start:prisma": "./setup.sh",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "start:prisma:debug": "concurrently --names \"nestjs,prisma\" --prefix-colors \"green.bold,blue.bold\" \"pnpm start:debug\" \"pnpm start:prisma\"",
+    "start:prisma:debug": "concurrently \"pnpm start:prisma\" \"pnpm start:debug\"",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -19,6 +19,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.717.0",
+    "@aws-sdk/s3-request-presigner": "^3.717.0",
     "@nestjs/apollo": "^12.2.1",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
@@ -28,8 +30,12 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.13",
+    "@nestjs/websockets": "^10.4.13",
     "@prisma/client": "5.21.1",
+    "@stripe/stripe-js": "^5.4.0",
     "apollo-server-core": "^3.13.0",
+    "aws-sdk": "^2.1692.0",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -38,16 +44,25 @@
     "graphql": "^16.9.0",
     "graphql-subscriptions": "^2.0.0",
     "graphql-tools": "^9.0.2",
+    "graphql-upload": "^17.0.0",
+    "multer": "1.4.5-lts.1",
     "passport-jwt": "^4.0.1",
+    "peerjs": "^1.5.4",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "stripe": "^17.5.0",
+    "uuid": "^11.0.3",
+    "simple-peer": "^9.11.1",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
     "@types/express": "^4.17.17",
+    "@types/graphql-upload": "^17.0.0",
     "@types/jest": "^29.5.2",
+    "@types/multer": "^1.4.12",
     "@types/node": "^20.3.1",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
@@ -69,21 +84,8 @@
   "prisma": {
     "seed": "node prisma/seed.js"
   },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2018"
   }
 }

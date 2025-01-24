@@ -14,7 +14,6 @@ export class CapsuleResolver {
   async getCapsuleDetails(
     @Args('capsuleId') capsuleId: string,
   ): Promise<CapsuleDetailsDto> {
-    console.log('Received capsuleId:', capsuleId); // 追加
     return await this.capsuleService.getCapsuleDetails(capsuleId);
   }
 

@@ -1,6 +1,7 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { StackOutput } from './stack.output';
 import { UserClassesOutput } from './UserClasses.Output';
+import { Media } from 'src/media/dto/media.output';
 
 @ObjectType()
 export class UserDto {
@@ -33,6 +34,9 @@ export class UserDto {
 
   @Field(() => [StackOutput], { nullable: true })
   stacks?: StackOutput[];
+
+  @Field(() => [Media], { nullable: true })
+  medias?: Media[];
 
   @Field(() => [UserClassesOutput], { nullable: true })
   userClasses?: UserClassesOutput[];

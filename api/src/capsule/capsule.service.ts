@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCapsuleInput } from './dto/create-capsule.input';
+import { CapsuleDetailsDto } from './dto/capsule-details.dto';
+import { CapsuleDto } from './dto/capsule.dto';
 //import { AuthService } from '../auth/auth.service';
 
 @Injectable()
@@ -12,8 +14,10 @@ export class CapsuleService {
    * @param data - カプセル作成に必要なデータ
    * @returns 作成されたカプセルの情報
    */
-  async createCapsule(createCapsuleInput: CreateCapsuleInput) {
-    const { name, class_id, size, release_date, upload_deadline } =
+  async createCapsule(
+    createCapsuleInput: CreateCapsuleInput,
+  ): Promise<CapsuleDto> {
+    const { name, class_id, size, release_date, url, upload_deadline } =
       createCapsuleInput;
 
     // Class ID の存在確認
@@ -25,13 +29,13 @@ export class CapsuleService {
       throw new NotFoundException(`Class with ID ${class_id} not found`);
     }
 
-    // 新しいカプセルの作成
     const newCapsule = await this.prisma.capsule.create({
       data: {
         name,
         class_id,
         size,
         release_date,
+        url,
         upload_deadline,
       },
     });
@@ -44,7 +48,7 @@ export class CapsuleService {
    * @param capsuleId - 取得するカプセルのID
    * @returns カプセルの詳細情報
    */
-  async getCapsuleDetails(capsuleId: string) {
+  async getCapsuleDetails(capsuleId: string): Promise<CapsuleDetailsDto> {
     // カプセルを取得し関連メディア情報を含む
     const capsule = await this.prisma.capsule.findUnique({
       where: { id: capsuleId },
@@ -78,6 +82,7 @@ export class CapsuleService {
       releaseDate: capsule.release_date,
       uploadDeadline: capsule.upload_deadline,
       size: capsule.size,
+      url: capsule.url,
       mediaStats,
     };
   }

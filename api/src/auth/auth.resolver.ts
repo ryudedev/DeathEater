@@ -95,7 +95,6 @@ export class AuthResolver {
   async deleteUser(@Args('id') id: string): Promise<boolean> {
     try {
       await this.authService.deleteUserById(id);
-      console.log('削除に成功しました。');
       return true;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {

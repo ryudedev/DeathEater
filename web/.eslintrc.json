@@ -1,8 +1,5 @@
 {
   "extends": ["next/core-web-vitals", "next/typescript", "prettier"],
-  "rules": {
-    "@typescript-eslint/no-explicit-any": "error" // any 型の使用を禁止する
-  },
   "parserOptions": {
     "project": "./tsconfig.json"
   }

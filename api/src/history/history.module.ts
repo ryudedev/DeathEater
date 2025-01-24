@@ -6,5 +6,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 @Module({
   providers: [HistoryResolver, HistoryService],
   imports: [PrismaModule],
+  exports: [HistoryService],
 })
 export class HistoryModule {}

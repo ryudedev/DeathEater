@@ -1,0 +1,260 @@
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
+import { S3 } from 'aws-sdk';
+import { getFileCategory } from 'src/utils/file-category.utils';
+import { MediaFile } from './dto/file.output';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Media } from './dto/media.output';
+
+@Injectable()
+export class MediaService {
+  private readonly s3: S3;
+
+  constructor(private readonly prisma: PrismaService) {
+    const region = process.env.AWS_REGION;
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    if (!region || !accessKeyId || !secretAccessKey || !bucketName) {
+      throw new Error('AWS configuration environment variables are missing');
+    }
+
+    this.s3 = new S3({
+      region,
+      accessKeyId,
+      secretAccessKey,
+    });
+  }
+
+  async uploadFiles(
+    organization_id: string,
+    school_id: string,
+    class_id: string,
+    capsule_id: string,
+    uploaded_by: string,
+    deletable: boolean[],
+    files: string[],
+  ): Promise<string[]> {
+    const urls: string[] = [];
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    if (!bucketName) {
+      throw new Error('AWS_S3_BUCKET_NAME environment variable is missing');
+    }
+
+    // for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
+      try {
+        const timestamp = new Date().getTime();
+        const uuid = uuidv4();
+
+        const matches = files[i].match(
+          /^data:(image\/[a-zA-Z0-9+.-]+);base64,/,
+        );
+        if (!matches) {
+          throw new Error(
+            'Invalid file format. Expected base64 encoded image.',
+          );
+        }
+
+        const contentType = matches[1];
+        const extension = contentType.split('/')[1].split('+')[0];
+        const fileName = `${timestamp}_${uuid}.${extension}`;
+        let base64Data;
+
+        if (extension === 'svg') {
+          const svgHeader = 'data:image/svg+xml;base64,';
+          if (files[i].startsWith(svgHeader)) {
+            base64Data = await files[i].replace(svgHeader, '');
+          }
+        } else {
+          base64Data = await files[i].replace(/^data:image\/\w+;base64,/, '');
+        }
+
+        const buffer = await Buffer.from(base64Data, 'base64');
+        const filePath = `${organization_id}/${school_id}/${class_id}/${fileName}`;
+
+        const params = {
+          Bucket: bucketName,
+          Key: filePath,
+          Body: buffer,
+          ContentEncoding: 'base64',
+          ContentType: contentType,
+        };
+
+        console.log('params: ', {
+          filePath,
+          contentType,
+          extension,
+        });
+
+        if (extension === 'svg') {
+          delete params.ContentEncoding;
+        }
+
+        const result = await this.s3.upload(params).promise();
+        urls.push(result.Location);
+
+        // メディアデータを保存（リレーション定義に従って修正）
+        await this.prisma.media.create({
+          data: {
+            capsule: {
+              connect: {
+                id: capsule_id,
+              },
+            },
+            user: {
+              connect: {
+                id: uploaded_by,
+              },
+            },
+            deletable: deletable[i],
+            file_path: filePath,
+            file_type: extension,
+          },
+        });
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        throw new InternalServerErrorException('Failed to upload file to S3');
+      }
+    }
+
+    return urls;
+  }
+
+  async getFilesInDirectory(
+    organization_id: string,
+    school_id: string,
+    class_id: string,
+  ): Promise<MediaFile[]> {
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    if (!bucketName) {
+      throw new Error('AWS_S3_BUCKET_NAME environment variable is missing');
+    }
+
+    const prefix = `${organization_id}/${school_id}/${class_id}/`;
+
+    try {
+      const params = {
+        Bucket: bucketName,
+        Prefix: prefix,
+      };
+
+      const data = await this.s3.listObjectsV2(params).promise();
+      if (!data.Contents || data.Contents.length === 0) {
+        return [];
+      }
+
+      // サブディレクトリを除外
+      const filteredContents = data.Contents.filter(
+        (item) => !item.Key!.replace(prefix, '').includes('/'),
+      );
+
+      const response = await Promise.all(
+        filteredContents.map(async (item) => {
+          const media_res = await this.prisma.media.findFirst({
+            where: { file_path: item.Key! },
+          });
+
+          const signedUrlParams = {
+            Bucket: bucketName,
+            Key: item.Key!,
+            Expires: 1440, // 有効期限（秒）
+          };
+          const signedUrl = await this.s3.getSignedUrlPromise(
+            'getObject',
+            signedUrlParams,
+          );
+          const type = item.Key!.split('.').pop();
+          const name = item.Key!.split('/').pop();
+          const category = await getFileCategory(type!);
+          const file: MediaFile = {
+            key: item.Key,
+            url: signedUrl,
+            type,
+            name: name.split('.').shift(),
+            size: item.Size,
+            category,
+            deletable: media_res?.deletable ?? false,
+            uploaded_by: media_res?.uploaded_by,
+            uploadedAt: item.LastModified!.toISOString(),
+          };
+
+          return file;
+        }),
+      );
+
+      return response;
+    } catch (error) {
+      console.error('Error fetching files from S3 directory:', error);
+      throw new InternalServerErrorException(
+        'Failed to retrieve files from S3 directory',
+      );
+    }
+  }
+
+  async deleteMedia(
+    organization_id: string,
+    school_id: string,
+    class_id: string,
+    key: string,
+    capsule_id: string,
+  ): Promise<Media> {
+    // prismaにkeyがdeletableなものが存在するか確認
+    const isDeletable = await this.prisma.media.findFirst({
+      where: {
+        file_path: key,
+        deletable: true,
+      },
+    });
+
+    if (!isDeletable) {
+      throw new Error('Media is not deletable.');
+    }
+
+    // 1. S3にファイルが存在するか確認
+    try {
+      await this.s3
+        .headObject({
+          Bucket: process.env.AWS_S3_BUCKET_NAME!,
+          Key: key,
+        })
+        .promise();
+    } catch {
+      throw new Error('S3: File not found.');
+    }
+
+    // 2. Prismaでカプセル内にメディアが存在するか確認
+    const media = await this.prisma.media.findFirst({
+      where: {
+        file_path: key,
+        capsule_id,
+      },
+    });
+
+    if (!media) {
+      throw new Error('Media does not exist in the specified capsule.');
+    }
+
+    // 3. S3からファイルを削除
+    try {
+      await this.s3
+        .deleteObject({
+          Bucket: process.env.AWS_S3_BUCKET_NAME!,
+          Key: key,
+        })
+        .promise();
+    } catch {
+      throw new Error('Failed to delete file from S3.');
+    }
+
+    // 4. Mediaテーブルから削除
+    const remove_media = await this.prisma.media.delete({
+      where: { id: media.id },
+    });
+
+    return remove_media;
+  }
+}

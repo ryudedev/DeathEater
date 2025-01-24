@@ -1,13 +1,11 @@
-import { ApolloClient, HttpLink, InMemoryCache, split } from '@apollo/client'
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
-import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
-import { getMainDefinition } from '@apollo/client/utilities'
-import { createClient } from 'graphql-ws'
+import { onError } from '@apollo/client/link/error'
 
 // アクセストークンを取得してHTTPヘッダーに追加
 const authLink = setContext((_, { headers }) => {
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null
   return {
     headers: {
       ...headers,
@@ -21,35 +19,26 @@ const httpLink = new HttpLink({
   uri: 'http://localhost:3001/graphql',
 })
 
-// WebSocketリンクを設定
-const wsLink =
-  typeof window !== 'undefined'
-    ? new GraphQLWsLink(
-        createClient({
-          url: 'ws://localhost:3001/graphql',
-        }),
-      )
-    : null
+// リンクを単純にHTTPのみに設定
+const link = authLink.concat(httpLink)
 
-// リンクを分割: HTTPかWebSocketかを判定
-const splitLink =
-  typeof window !== 'undefined' && wsLink != null
-    ? split(
-        ({ query }) => {
-          const definition = getMainDefinition(query)
-          return (
-            definition.kind === 'OperationDefinition' &&
-            definition.operation === 'subscription'
-          )
-        },
-        wsLink,
-        authLink.concat(httpLink), // HTTPリクエストにauthLinkを追加
+// エラーハンドリングのリンク設定
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message, locations, path }) => {
+      console.error(
+        `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(locations)}, Path: ${path}`,
       )
-    : authLink.concat(httpLink)
+    })
+  }
+  if (networkError) {
+    console.error(`[Network error]: ${networkError}`)
+  }
+})
 
 // Apollo Clientを作成
 const client = new ApolloClient({
-  link: splitLink,
+  link: errorLink.concat(link), // errorLinkを先に追加
   cache: new InMemoryCache(),
 })
 
