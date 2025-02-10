@@ -12,7 +12,7 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   return (
     <button
-      className={`flex bg-primary border border-primary rounded-full ${className}`}
+      className={`${className} flex bg-primary border border-primary rounded-full`}
       {...props}
     >
       {children}

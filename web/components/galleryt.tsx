@@ -7,6 +7,7 @@ interface Gallery {
   onChange: (isChecked: boolean) => void
   showCheckbox: boolean
   isChecked: boolean
+  deletable: boolean
 }
 
 const ImageCheckbox: React.FC<Gallery> = ({
@@ -15,6 +16,7 @@ const ImageCheckbox: React.FC<Gallery> = ({
   onChange,
   showCheckbox,
   isChecked,
+  deletable,
 }) => {
   const handleClick = () => {
     const newChecked = !isChecked
@@ -23,8 +25,8 @@ const ImageCheckbox: React.FC<Gallery> = ({
 
   return (
     <div
-      className="relative w-20 h-20 border-2 rounded-lg overflow-hidden cursor-pointer transition-all"
-      onClick={handleClick}
+      className={`relative w-20 h-20 border-2 rounded-lg overflow-hidden cursor-pointer transition-all ${showCheckbox && !deletable && 'grayscale opacity-50 cursor-default'}`}
+      onClick={deletable ? handleClick : undefined}
     >
       <Image
         src={imageUrl}
@@ -34,7 +36,7 @@ const ImageCheckbox: React.FC<Gallery> = ({
         height={75}
       />
       {/* 条件に基づいてチェックボックスを表示 */}
-      {showCheckbox && (
+      {showCheckbox && deletable && (
         <div
           className={`absolute -top-6 -left-6 w-12 h-12 rounded-full border-2 ${
             isChecked

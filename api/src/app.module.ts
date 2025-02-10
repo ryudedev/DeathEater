@@ -15,6 +15,7 @@ import { StacksModule } from './stacks/stacks.module';
 
 // 環境変数を読み込むための設定
 import * as dotenv from 'dotenv';
+import { SignalingGateway } from './capsule/signaling.gateway';
 dotenv.config();
 
 @Module({
@@ -39,5 +40,6 @@ dotenv.config();
     MediaModule,
     StacksModule,
   ],
+  providers: [SignalingGateway],
 })
 export class AppModule {}

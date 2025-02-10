@@ -24,7 +24,7 @@ type DashboardStore = {
   userClasses: UserClassesWithClass[] | null
   classList: Class[] | null
   capsules: Capsule[] | null
-  capsulesByClass: Record<string, Capsule[]> // クラスごとに分けられたカプセル
+  capsulesByClass: Record<string, Capsule[]>
   stackList: StackProps[] | null
   members: MemberItem[]
   mediaList: MediaFile[]
@@ -34,9 +34,9 @@ type DashboardStore = {
   selectedClassId: string
   selectedOrganizationId: string
   selectedSchoolId: string
-  // メディアごとの容量を格納
-  setInit: () => Promise<void> // 初期化処理
-  setClassMembers: (class_id: string) => Promise<void> // クラスメンバー情報取得
+  selectedCapsuleId: string
+  setInit: () => Promise<void>
+  setClassMembers: (class_id: string) => Promise<void>
   setSelectedClassId: (index: string) => void
   setMediaList: (
     organization_id: string,
@@ -44,6 +44,7 @@ type DashboardStore = {
     class_id: string,
     capsule_id: string,
   ) => Promise<void>
+  setCapsuleId: (capsuleId: string) => void
 }
 
 export const useDashboardStore = create<DashboardStore>((set, get) => ({
@@ -62,6 +63,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   selectedClassId: '',
   selectedOrganizationId: '',
   selectedSchoolId: '',
+  selectedCapsuleId: '',
 
   setInit: async () => {
     set({ loading: true, error: undefined })
@@ -70,76 +72,80 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const email = await get_cookie('email')
       if (!email) throw new Error('Email not found in cookies.')
 
-      const { data } = await client.query({
-        query: GET_USER,
-        variables: { email },
-        fetchPolicy: 'network-only',
-      })
+      // Parallel data fetching to reduce overall load time
+      const [userData] = await Promise.all([
+        client.query({
+          query: GET_USER,
+          variables: { email },
+          fetchPolicy: 'network-only',
+        }),
+      ])
 
-      const userData = data.findUserByEmail
-      if (userData) {
-        const { userClasses, ...userWithoutClasses } = userData
+      const userInfo = userData.data.findUserByEmail
+      if (!userInfo) throw new Error('User data not found')
 
-        const userClassesWithoutCapsules: UserClassesWithClass[] =
-          userClasses?.map((userClass: UserClassesWithClass) => ({
-            ...userClass,
-            class: {
-              ...userClass.class,
-              capsules: undefined,
-            },
-          }))
+      const { userClasses, ...userWithoutClasses } = userInfo
 
-        const allCapsules: Capsule[] = userClasses?.flatMap(
+      // Optimize data transformations
+      const processedClasses =
+        userClasses?.map((userClass: UserClassesWithClass) => ({
+          ...userClass,
+          class: { ...userClass.class, capsules: undefined },
+        })) || []
+
+      const allCapsules: Capsule[] =
+        userClasses?.flatMap(
           (userClass: UserClassesWithClass) => userClass.class.capsules || [],
-        )
+        ) || []
 
-        const classes: Class[] = userClasses?.map(
-          (userClass: UserClassesWithClass) => userClass.class,
-        )
+      const classes: Class[] = processedClasses.map(
+        (userClass: UserClassesWithClass) => userClass.class,
+      )
 
-        const capsulesByClass: Record<string, Capsule[]> = {}
-        classes?.forEach((classItem) => {
-          capsulesByClass[classItem.id!] =
-            allCapsules?.filter(
-              (capsule: Capsule) => capsule.class_id === classItem.id,
-            ) || []
-        })
+      const capsulesByClass: Record<string, Capsule[]> = classes.reduce(
+        (acc, classItem) => {
+          acc[classItem.id!] = allCapsules.filter(
+            (capsule: Capsule) => capsule.class_id === classItem.id,
+          )
+          return acc
+        },
+        {} as Record<string, Capsule[]>,
+      )
 
-        // Set initial selected IDs from the first available class
-        const firstClass = classes?.[0]
-        const initialClassId = firstClass?.id || ''
-        const initialOrganizationId = firstClass?.school?.organization_id || ''
-        const initialSchoolId = firstClass?.school_id || ''
+      // Set initial selected IDs more safely
+      const firstClass = classes[0]
+      const initialClassId = firstClass?.id || ''
+      const initialOrganizationId = firstClass?.school?.organization_id || ''
+      const initialSchoolId = firstClass?.school_id || ''
+      const initialCapsuleId = allCapsules[0]?.id || ''
 
-        set({
-          email,
-          user: userWithoutClasses,
-          userClasses: userClassesWithoutCapsules,
-          classList: classes,
-          capsules: allCapsules,
-          capsulesByClass,
-          selectedClassId: initialClassId,
-          selectedOrganizationId: initialOrganizationId,
-          selectedSchoolId: initialSchoolId,
-        })
-      }
+      set({
+        email,
+        user: userWithoutClasses,
+        userClasses: processedClasses,
+        classList: classes,
+        capsules: allCapsules,
+        capsulesByClass,
+        selectedClassId: initialClassId,
+        selectedOrganizationId: initialOrganizationId,
+        selectedSchoolId: initialSchoolId,
+        selectedCapsuleId: initialCapsuleId,
+      })
     } catch (error: any) {
-      if (error instanceof ApolloError) {
-        set({ error })
-      } else if (error.message === 'Email not found in cookies.') {
-        set({
-          error: new ApolloError({
-            errorMessage: 'Email not found in cookies.',
-          }),
-        })
-      } else {
-        console.error('Unexpected error:', error)
-        set({
-          error: new ApolloError({
-            errorMessage: 'Unexpected error occurred.',
-          }),
-        })
-      }
+      const apolloError =
+        error instanceof ApolloError
+          ? error
+          : new ApolloError({
+              errorMessage: error.message || 'Initialization failed',
+            })
+
+      set({
+        error: apolloError,
+        email: null,
+        user: null,
+        userClasses: null,
+        classList: null,
+      })
     } finally {
       set({ loading: false })
     }
@@ -183,12 +189,14 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         selectedClassId: classId,
         selectedOrganizationId: organizationId,
         selectedSchoolId: schoolId,
+        selectedCapsuleId: state.capsulesByClass[classId][0]?.id || '',
       })
     } else {
       set({
         selectedClassId: '',
         selectedOrganizationId: '',
         selectedSchoolId: '',
+        selectedCapsuleId: '',
       })
     }
   },
@@ -272,5 +280,9 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     } finally {
       set({ loading: false })
     }
+  },
+
+  setCapsuleId: (capsuleId: string) => {
+    set({ selectedCapsuleId: capsuleId })
   },
 }))

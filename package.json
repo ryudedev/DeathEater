@@ -10,6 +10,7 @@
     "prepare": "husky install",
     "lint:precommit": "pnpm lint:front && pnpm lint:back",
     "fmt:precommit": "pnpm fmt:front && pnpm fmt:back",
+    "dev:install": "pnpm i && cd api && pnpm i && cd ../web && pnpm i && cd ..",
     "fmt:front": "cd web && pnpm fmt",
     "fmt:back": "cd api && pnpm format",
     "lint:front": "cd web && pnpm lint",

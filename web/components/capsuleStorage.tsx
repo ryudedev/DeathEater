@@ -1,9 +1,12 @@
 'use client'
+import useStorage from '@/hooks/useStorage'
+import useStorageConverter from '@/hooks/useStorageConverter'
+import useUsagePercentage from '@/hooks/useUsagePercentage'
 import { calculateDateDifference } from '@/lib/date'
-import { Capsule } from '@/type'
+import { Capsule, UsageProps } from '@/type'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Button from './button'
 import Card from './card'
 import MediaAdd from './mediaAdd'
@@ -17,6 +20,12 @@ type CapsuleStorageProps = {
 
 export const CapsuleStorage = ({ capsules, type }: CapsuleStorageProps) => {
   const router = useRouter()
+  const { calculateUsagePercentage } = useUsagePercentage()
+  const storage = useStorage()
+  const { convertSize } = useStorageConverter()
+  const [usagePercentage, setUsagePercentage] = useState<UsageProps | null>(
+    null,
+  )
   const [isUpload, setIsUpload] = useState<boolean>(false)
   const mediaArray = [
     mediaType.image,
@@ -25,6 +34,7 @@ export const CapsuleStorage = ({ capsules, type }: CapsuleStorageProps) => {
     mediaType.text,
     mediaType.free,
   ]
+
   const onClick = () => {
     if (type === 'transition') {
       router.push('/capsules')
@@ -36,6 +46,13 @@ export const CapsuleStorage = ({ capsules, type }: CapsuleStorageProps) => {
   const handleCloseMediaAdd = () => {
     setIsUpload(false)
   }
+
+  useEffect(() => {
+    if (capsules && capsules.length) {
+      const res = calculateUsagePercentage(capsules[capsules.length - 1].size!)
+      setUsagePercentage(res)
+    }
+  }, [capsules])
 
   return (
     <>
@@ -77,7 +94,27 @@ export const CapsuleStorage = ({ capsules, type }: CapsuleStorageProps) => {
             {capsules[capsules.length - 1].name}
           </h3>
           <div className="flex flex-col gap-1 justify-end">
-            <MediaBar image={24} audio={8} video={18} text={13} free={37} />
+            {usagePercentage && storage && (
+              <MediaBar
+                imageRatio={usagePercentage.percentages['画像']}
+                imageType={convertSize(storage['画像']).unit}
+                image={Number(convertSize(storage['画像']).value)}
+                audioRatio={usagePercentage.percentages['音声']}
+                audioType={convertSize(storage['音声']).unit}
+                audio={Number(convertSize(storage['音声']).value)}
+                videoRatio={usagePercentage.percentages['動画']}
+                videoType={convertSize(storage['動画']).unit}
+                video={Number(convertSize(storage['動画']).value)}
+                textRatio={usagePercentage.percentages['テキスト']}
+                textType={convertSize(storage['テキスト']).unit}
+                text={Number(convertSize(storage['テキスト']).value)}
+                free={usagePercentage.remainingStorage.remainingStorageGB}
+                freeType="GB"
+                freeRatio={
+                  usagePercentage.remainingStorage.remainingStoragePercentage
+                }
+              />
+            )}
             <span className="text-description">
               {calculateDateDifference(
                 new Date(capsules[capsules.length - 1].release_date!),

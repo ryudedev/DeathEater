@@ -41,7 +41,9 @@ export default function Type({ params: { type } }: TypeProps) {
   } = useDashboardStore()
 
   // カラムの総合使用割合
-  const [usagePercentage, setUsagePercentage] = useState<UsageProps>({})
+  const [usagePercentage, setUsagePercentage] = useState<UsageProps | null>(
+    null,
+  )
   const { calculateUsagePercentage } = useUsagePercentage()
 
   useEffect(() => {
@@ -163,8 +165,8 @@ export default function Type({ params: { type } }: TypeProps) {
             {alertMessage}
           </div>
         )}
-        {usagePercentage[type] >= 60 && (
-          <UsageAlert totalUsage={usagePercentage[type]} />
+        {usagePercentage && usagePercentage.percentages[type] >= 60 && (
+          <UsageAlert totalUsage={usagePercentage.percentages[type]} />
         )}
         <div
           className="flex flex-row gap-2.5 cursor-pointer"

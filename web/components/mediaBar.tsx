@@ -1,71 +1,121 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 interface MediaProps {
-  image: number // 画像
-  audio: number // 音声
-  video: number // 動画
-  text: number // テキスト
-  free: number // 空き容量
+  image: number
+  imageType: string
+  imageRatio: number
+  audio: number
+  audioType: string
+  audioRatio: number
+  video: number
+  videoType: string
+  videoRatio: number
+  text: number
+  textType: string
+  textRatio: number
+  free: number
+  freeType: string
+  freeRatio: number
   className?: string
 }
 
 const MediaBar: React.FC<MediaProps> = ({
+  // 画像のKB
   image,
+  imageType,
+  // 画像のGB
+  imageRatio,
   audio,
+  audioType,
+  audioRatio,
   video,
+  videoType,
+  videoRatio,
   text,
+  textType,
+  textRatio,
   free,
+  freeType,
+  freeRatio,
   className,
 }) => {
-  const total = image + audio + video + text + free
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
 
-  // 各カテゴリの比率を計算
-  const imageRatio = (image / total) * 100
-  const audioRatio = (audio / total) * 100
-  const videoRatio = (video / total) * 100
-  const textRatio = (text / total) * 100
-  const freeRatio = (free / total) * 100
+  const categories = [
+    {
+      name: '画像',
+      ratio: imageRatio,
+      color: 'bg-image',
+      size: image,
+      type: imageType,
+    },
+    {
+      name: '音声',
+      ratio: audioRatio,
+      color: 'bg-movie',
+      size: audio,
+      type: audioType,
+    },
+    {
+      name: '動画',
+      ratio: videoRatio,
+      color: 'bg-voice',
+      size: video,
+      type: videoType,
+    },
+    {
+      name: 'テキスト',
+      ratio: textRatio,
+      color: 'bg-text',
+      size: text,
+      type: textType,
+    },
+    {
+      name: '空き容量',
+      ratio: freeRatio,
+      color: 'bg-free',
+      size: free,
+      type: freeType,
+    },
+  ]
 
   return (
-    <div
-      className={`flex w-full h-2.5 ${className} rounded-full overflow-hidden`}
-    >
-      {/* 各部分のバーを色分けして表示 */}
+    <div className="relative">
       <div
-        style={{
-          width: `${imageRatio}%`,
-        }}
-        className="bg-image"
-        title={`Image: ${imageRatio.toFixed(1)}%`}
-      />
-      <div
-        style={{
-          width: `${audioRatio}%`,
-        }}
-        className="bg-movie"
-        title={`Audio: ${audioRatio.toFixed(1)}%`}
-      />
-      <div
-        style={{
-          width: `${videoRatio}%`,
-        }}
-        className="bg-voice"
-        title={`Video: ${videoRatio.toFixed(1)}%`}
-      />
-      <div
-        style={{
-          width: `${textRatio}%`,
-        }}
-        className="bg-text"
-        title={`Text: ${textRatio.toFixed(1)}%`}
-      />
-      <div
-        style={{
-          width: `${freeRatio}%`,
-        }}
-        className="bg-free"
-        title={`Free: ${freeRatio.toFixed(1)}%`}
-      />
+        className={`flex w-full h-2.5 ${className} rounded-full overflow-hidden`}
+      >
+        {categories.map((category) => (
+          <div
+            key={category.name}
+            style={{ width: `${category.ratio}%` }}
+            className={`${category.color} relative`}
+            onMouseEnter={() => setHoveredCategory(category.name)}
+            onMouseLeave={() => setHoveredCategory(null)}
+          />
+        ))}
+      </div>
+      {hoveredCategory && (
+        <div className="absolute top-full left-0 mt-1 bg-black text-white text-xs p-1 rounded shadow-lg z-10">
+          {categories.find((c) => c.name === hoveredCategory) && (
+            <>
+              <div>
+                {hoveredCategory}:{' '}
+                {categories
+                  .find((c) => c.name === hoveredCategory)!
+                  .ratio.toFixed(1)}
+                %
+              </div>
+              <div>
+                容量:{' '}
+                {categories
+                  .find((c) => c.name === hoveredCategory)!
+                  .size.toFixed(2)}{' '}
+                {categories.find((c) => c.name === hoveredCategory)!.type}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }

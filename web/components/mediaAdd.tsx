@@ -187,6 +187,7 @@ const MediaAdd: React.FC<MediaAddProps> = ({ onClose }) => {
                       }
                       showCheckbox={true}
                       isChecked={photo.isDeletable}
+                      deletable={photo.isDeletable}
                     />
                   </div>
                 ))

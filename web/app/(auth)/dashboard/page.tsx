@@ -21,6 +21,10 @@ export default function Dashboard() {
   const router = useRouter()
 
   useEffect(() => {
+    console.log(loading)
+  }, [loading])
+
+  useEffect(() => {
     if (capsules?.length) {
       setMediaList(
         selectedOrganizationId,
@@ -37,7 +41,7 @@ export default function Dashboard() {
     selectedClassId,
   ])
 
-  if (loading) return <p>Loading...</p>
+  // if (loading) return <p>Loading...</p>
   if (error) {
     if (error.message === 'Email not found in cookies.') {
       router.push('/')

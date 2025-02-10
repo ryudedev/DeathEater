@@ -30,7 +30,7 @@ const AudioStateManager = {
       this.localStream = stream
       return stream
     } catch (error) {
-      console.error('マイクアクセスエラー:', error)
+      console.error('Microphone access error:', error)
       throw error
     }
   },
@@ -141,47 +141,76 @@ export default function CapsuleOpen({
   const initialTouchY = useRef<number | null>(null)
   const socketRef = useRef<Socket | null>(null)
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map())
-  const audioRefs = useRef<Record<string, HTMLAudioElement>>({})
+  const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map())
 
   const dotLottieRefCallback = useCallback(
     (ref: DotLottie) => setDotLottie(ref),
     [],
   )
 
-  const setupPeerConnection = useCallback(
+  const createPeerConnection = useCallback(
     async (targetUserId: string) => {
+      // Close existing connection if any
+      const existingPC = peerConnectionsRef.current.get(targetUserId)
+      if (existingPC) {
+        existingPC.close()
+        peerConnectionsRef.current.delete(targetUserId)
+      }
+
       const peerConnection = new RTCPeerConnection({
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
       })
 
-      // デバッグモニタリングを追加
-      AudioStateManager.monitorPeerConnection(
-        peerConnection,
-        `Peer-${targetUserId}`,
-      )
+      peerConnectionsRef.current.set(targetUserId, peerConnection)
 
+      // Add local stream tracks to the peer connection
+      if (AudioStateManager.localStream) {
+        AudioStateManager.localStream.getTracks().forEach((track) => {
+          peerConnection.addTrack(track, AudioStateManager.localStream!)
+        })
+      }
+
+      // Handle ICE candidates
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
           socketRef.current?.emit('ice-candidate', {
-            roomId,
             targetUserId,
             candidate: event.candidate,
+            roomId,
           })
         }
       }
 
-      peerConnection.ontrack = (event) => {
-        const [remoteStream] = event.streams
-        const audio = new Audio()
-        audio.srcObject = remoteStream
-        audio.play()
-        audioRefs.current[targetUserId] = audio
+      // Handle connection state changes
+      peerConnection.onconnectionstatechange = () => {
+        console.log(
+          `Connection state for ${targetUserId}:`,
+          peerConnection.connectionState,
+        )
       }
 
-      peerConnectionsRef.current.set(targetUserId, peerConnection)
+      // Handle incoming tracks
+      peerConnection.ontrack = (event) => {
+        console.log('Received remote track:', event.track.kind)
+        const [remoteStream] = event.streams
+
+        let audioElement = audioElementsRef.current.get(targetUserId)
+        if (!audioElement) {
+          audioElement = new Audio()
+          audioElement.autoplay = true
+          audioElement.muted = !speakerEnabled
+          audioElementsRef.current.set(targetUserId, audioElement)
+        }
+
+        audioElement.srcObject = remoteStream
+        audioElement
+          .play()
+          .catch((error) => console.error('Audio play failed:', error))
+      }
+
       return peerConnection
     },
-    [roomId],
+    [roomId, speakerEnabled],
   )
 
   const playAnimation = () => {
@@ -209,6 +238,91 @@ export default function CapsuleOpen({
     }
   }
 
+  const handleCall = useCallback(
+    async (targetUserId: string) => {
+      try {
+        console.log('Initiating call to:', targetUserId)
+        const pc = await createPeerConnection(targetUserId)
+
+        const offer = await pc.createOffer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: false,
+        })
+        await pc.setLocalDescription(offer)
+
+        socketRef.current?.emit('offer', {
+          targetUserId,
+          offer,
+          roomId,
+        })
+      } catch (error) {
+        console.error('Error creating offer:', error)
+      }
+    },
+    [createPeerConnection, roomId],
+  )
+
+  const handleOffer = useCallback(
+    async (data: { fromUserId: string; offer: RTCSessionDescriptionInit }) => {
+      try {
+        console.log('Received offer from:', data.fromUserId)
+        const pc = await createPeerConnection(data.fromUserId)
+
+        // Important: First set remote description
+        await pc.setRemoteDescription(new RTCSessionDescription(data.offer))
+
+        // Then create and set local description
+        const answer = await pc.createAnswer()
+        await pc.setLocalDescription(answer)
+
+        socketRef.current?.emit('answer', {
+          targetUserId: data.fromUserId,
+          answer,
+          roomId,
+        })
+      } catch (error) {
+        console.error('Error handling offer:', error)
+      }
+    },
+    [createPeerConnection, roomId],
+  )
+
+  const handleAnswer = useCallback(
+    async (data: { fromUserId: string; answer: RTCSessionDescriptionInit }) => {
+      try {
+        console.log('Received answer from:', data.fromUserId)
+        const pc = peerConnectionsRef.current.get(data.fromUserId)
+        if (pc && pc.signalingState !== 'stable') {
+          await pc.setRemoteDescription(new RTCSessionDescription(data.answer))
+        } else {
+          console.log(
+            'Peer connection not found or in incorrect state:',
+            pc?.signalingState,
+          )
+        }
+      } catch (error) {
+        console.error('Error handling answer:', error)
+      }
+    },
+    [],
+  )
+
+  const handleIceCandidate = useCallback(
+    async (data: { fromUserId: string; candidate: RTCIceCandidateInit }) => {
+      try {
+        const pc = peerConnectionsRef.current.get(data.fromUserId)
+        if (pc && pc.remoteDescription) {
+          await pc.addIceCandidate(new RTCIceCandidate(data.candidate))
+        } else {
+          console.log('Peer connection not found or remote description not set')
+        }
+      } catch (error) {
+        console.error('Error handling ICE candidate:', error)
+      }
+    },
+    [],
+  )
+
   const openCapsule = () => {
     if (!user?.id) return
     const userIcon = 'https://via.placeholder.com/50'
@@ -226,39 +340,33 @@ export default function CapsuleOpen({
       AudioStateManager.stopAudio()
       setMicEnabled(false)
       socketRef.current?.emit('stopVoice', { roomId, userId: user.id })
-      console.log('🎤 Microphone disabled')
     } else {
       try {
         const stream = await AudioStateManager.startAudio()
         if (stream) {
-          // マイクレベルのモニタリングを開始
-          const cleanup = AudioStateManager.debugAudioLevels()
-          socketRef.current?.emit('startVoice', {
-            roomId,
-            userId: user.id,
-          })
           setMicEnabled(true)
-          console.log('🎤 Microphone enabled')
+          socketRef.current?.emit('startVoice', { roomId, userId: user.id })
 
-          // コンポーネントのクリーンアップ時に監視を停止
-          return () => cleanup?.()
+          // Establish connections with existing peers
+          capsuleStates.forEach((state) => {
+            if (state.userId !== user.id) {
+              handleCall(state.userId)
+            }
+          })
         }
       } catch (error) {
-        console.error('🚫 マイク切り替えエラー:', error)
+        console.error('Microphone toggle error:', error)
       }
     }
   }
 
   const toggleSpeaker = () => {
-    if (!user?.id) {
-      console.warn('Invalid userId for toggleSpeaker')
-      return
-    }
-
     const newSpeakerState = !speakerEnabled
     setSpeakerEnabled(newSpeakerState)
-    Object.values(audioRefs.current).forEach((audio) => {
-      audio.muted = newSpeakerState
+
+    // Update all audio elements' muted state
+    audioElementsRef.current.forEach((audio) => {
+      audio.muted = !newSpeakerState
     })
   }
 
@@ -268,53 +376,43 @@ export default function CapsuleOpen({
     const socket = io(
       process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001',
       {
-        query: {
-          user: user.id,
-          roomId,
-        },
+        query: { user: user.id, roomId },
       },
     )
 
     socketRef.current = socket
 
-    socket.on('stateUpdate', (state: CapsuleState[]) => {
-      console.log('Received state update:', state)
-      setCapsuleStates(state)
-    })
-
-    socket.on('newUserStream', async ({ userId }) => {
-      const pc = await setupPeerConnection(userId)
-      if (AudioStateManager.localStream) {
-        AudioStateManager.localStream.getTracks().forEach((track) => {
-          pc.addTrack(track, AudioStateManager.localStream!)
-        })
+    socket.on('stateUpdate', setCapsuleStates)
+    socket.on('offer', handleOffer)
+    socket.on('answer', handleAnswer)
+    socket.on('ice-candidate', handleIceCandidate)
+    socket.on('newUserJoined', (userId: string) => {
+      if (micEnabled && userId !== user.id) {
+        console.log('New user joined, initiating call:', userId)
+        handleCall(userId)
       }
     })
-
-    socket.on('userStreamStopped', ({ userId }) => {
-      peerConnectionsRef.current.get(userId)?.close()
-      peerConnectionsRef.current.delete(userId)
-      if (audioRefs.current[userId]) {
-        audioRefs.current[userId].pause()
-        delete audioRefs.current[userId]
-      }
-    })
-
-    // Save refs for cleanup
-    const currentPeerConnections = peerConnectionsRef.current
-    const currentAudioRefs = audioRefs.current
 
     return () => {
       AudioStateManager.stopAudio()
-      currentPeerConnections.forEach((pc) => pc.close())
-      currentPeerConnections.clear()
-      Object.values(currentAudioRefs).forEach((audio) => {
+      peerConnectionsRef.current.forEach((pc) => pc.close())
+      peerConnectionsRef.current.clear()
+      audioElementsRef.current.forEach((audio) => {
         audio.pause()
         audio.srcObject = null
       })
+      audioElementsRef.current.clear()
       socket.disconnect()
     }
-  }, [roomId, user?.id, setupPeerConnection])
+  }, [
+    roomId,
+    user?.id,
+    handleOffer,
+    handleAnswer,
+    handleIceCandidate,
+    handleCall,
+    micEnabled,
+  ])
 
   return !isOpen ? (
     <div

@@ -7,12 +7,14 @@ export default function useStorageConverter() {
    * @returns { value: number, unit: string } - 変換後の数値と単位
    */
   const convertSize = (sizeInKB: number) => {
-    if (sizeInKB >= 1024 * 1024) {
-      return { value: (sizeInKB / (1024 * 1024)).toFixed(2), unit: 'GB' }
+    if (sizeInKB >= 1024 * 1024 * 1024) {
+      return { value: (sizeInKB / (1024 * 1024 * 1024)).toFixed(2), unit: 'GB' }
+    } else if (sizeInKB >= 1024 * 1024) {
+      return { value: (sizeInKB / (1024 * 1024)).toFixed(2), unit: 'MB' }
     } else if (sizeInKB >= 1024) {
-      return { value: (sizeInKB / 1024).toFixed(2), unit: 'MB' }
+      return { value: (sizeInKB / 1024).toFixed(2), unit: 'KB' }
     } else {
-      return { value: sizeInKB.toFixed(2), unit: 'KB' }
+      return { value: sizeInKB.toFixed(2), unit: 'B' }
     }
   }
 

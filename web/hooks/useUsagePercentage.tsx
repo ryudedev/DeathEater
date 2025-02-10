@@ -23,13 +23,23 @@ export default function useUsagePercentage() {
       >
     ).forEach((category) => {
       if (category !== '合計') {
-        const usageInGB = storageUsage[category] / (1024 * 1024) // KB -> GBに変換
+        const usageInGB = storageUsage[category] / (1024 * 1024 * 1024) // KB -> GBに変換
         // totalCapacityGBのうち、usageInGBが何%か計算
         percentages[category] = (usageInGB / totalCapacityGB) * 100
       }
     })
 
-    return percentages
+    const usedStorageGB = storageUsage['合計'] / (1024 * 1024 * 1024)
+    const remainingStorageGB = totalCapacityGB - usedStorageGB
+    const remainingStorage = {
+      remainingStoragePercentage: (remainingStorageGB / totalCapacityGB) * 100,
+      remainingStorageGB,
+    }
+
+    return {
+      percentages,
+      remainingStorage,
+    }
   }
 
   return { calculateUsagePercentage }

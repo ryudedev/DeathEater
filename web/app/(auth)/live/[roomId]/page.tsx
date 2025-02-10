@@ -17,15 +17,14 @@ export default function Live({ params }: LiveProps) {
   const [isOpened, setIsOpened] = useState<boolean>(false)
   const { roomId } = params
 
-  console.log(isOpened)
-
   useEffect(() => {
-    console.log(capsules)
     if (capsules) {
       const currentCapsule = capsules.find((capsule) => capsule.url === roomId)
-      console.log(currentCapsule)
+      console.log('currentCapsule: ', !!currentCapsule)
+      console.log(isOpened)
 
       if (!currentCapsule) {
+        console.log('currentCapsule is not found')
         router.push('/dashboard')
         return
       }
@@ -41,6 +40,13 @@ export default function Live({ params }: LiveProps) {
       // ルームが有効かどうかの確認（例：24時間以内）
       const timeLimit = 24 * 60 * 60 * 1000 // 24時間（ミリ秒）
       if (currentDate.getTime() - release_date.getTime() > timeLimit) {
+        console.log({
+          currentDate: currentDate.getTime(),
+          release_date: release_date.getTime(),
+          // currentDate-release_dateの計算結果
+          diff: currentDate.getTime() - release_date.getTime(),
+          timeLimit,
+        })
         console.log(currentDate.getTime() - release_date.getTime() > timeLimit)
         router.push('/dashboard')
         return
@@ -55,7 +61,7 @@ export default function Live({ params }: LiveProps) {
 
   // CapsuleOpenコンポーネントのレンダリング
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-full">
       <CapsuleOpen isTransition={true} seconds={2000} roomId={roomId} />
     </div>
   )

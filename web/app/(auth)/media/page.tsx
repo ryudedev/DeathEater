@@ -3,18 +3,23 @@ import Button from '@/components/button'
 import Card from '@/components/card'
 import ImageCheckbox from '@/components/galleryt'
 import Header from '@/components/header'
-import { GET_FILES_IN_DIRECTORY } from '@/lib/queries/media'
+import { DELETE_MEDIA, GET_FILES_IN_DIRECTORY } from '@/lib/queries/media'
 import { useDashboardStore } from '@/store'
 import { GetFilesInDirectoryResponse } from '@/type'
-import { useQuery } from '@apollo/client'
+import { useMutation, useQuery } from '@apollo/client'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 
 const Media: React.FC = () => {
   // チェックボックス表示の状態を管理
   const [showCheckbox, setShowCheckbox] = useState(false)
-  const { selectedOrganizationId, selectedSchoolId, selectedClassId } =
-    useDashboardStore()
+  const {
+    selectedOrganizationId,
+    selectedSchoolId,
+    selectedClassId,
+    capsules,
+    setMediaList,
+  } = useDashboardStore()
 
   const { data } = useQuery<GetFilesInDirectoryResponse>(
     GET_FILES_IN_DIRECTORY,
@@ -26,6 +31,24 @@ const Media: React.FC = () => {
       },
     },
   )
+
+  const [deleteMedia] = useMutation(DELETE_MEDIA, {
+    onCompleted: () => {
+      if (
+        capsules?.length &&
+        selectedOrganizationId &&
+        selectedSchoolId &&
+        selectedClassId
+      ) {
+        setMediaList(
+          selectedOrganizationId,
+          selectedSchoolId,
+          selectedClassId,
+          capsules[capsules.length - 1].id!,
+        )
+      }
+    },
+  })
 
   // 各画像のチェック状態を管理
   const [checkedStates, setCheckedStates] = useState<Record<
@@ -43,21 +66,6 @@ const Media: React.FC = () => {
       console.log(data.getFilesInDirectory)
     }
   }, [data])
-
-  // // 写真データ（配列）
-  // const [photoData, setPhotoData] = useState([
-  //   { id: '1', imageUrl: 'https://via.placeholder.com/75', label: 'Image 1' },
-  //   { id: '2', imageUrl: 'https://via.placeholder.com/75', label: 'Image 2' },
-  //   { id: '3', imageUrl: 'https://via.placeholder.com/75', label: 'Image 3' },
-  //   { id: '4', imageUrl: 'https://via.placeholder.com/75', label: 'Image 3' },
-  //   { id: '5', imageUrl: 'https://via.placeholder.com/75', label: 'Image 3' },
-  //   { id: '6', imageUrl: 'https://via.placeholder.com/75', label: 'Image 3' },
-  //   { id: '7', imageUrl: 'https://via.placeholder.com/75', label: 'Image 3' },
-  //   { id: '8', imageUrl: 'https://via.placeholder.com/75', label: 'Image 3' },
-  //   { id: '9', imageUrl: 'https://via.placeholder.com/75', label: 'Image 3' },
-  //   { id: '10', imageUrl: 'https://via.placeholder.com/75', label: 'Image 3' },
-  //   { id: '11', imageUrl: 'https://via.placeholder.com/75', label: 'Image 3' },
-  // ])
 
   // 削除確認画面の表示状態
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
@@ -100,6 +108,37 @@ const Media: React.FC = () => {
   //   setShowCheckbox(false)
   // }
 
+  const handleDelete = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    try {
+      if (!capsules?.length || !checkedStates) return
+      const selectedMediaKeys = Object.entries(checkedStates || {})
+        .filter(([, isChecked]) => isChecked)
+        .map(([key]) => key)
+
+      // Then in your deleteMedia mutation
+      selectedMediaKeys.map((key) => {
+        const res = deleteMedia({
+          variables: {
+            key,
+            organization_id: selectedOrganizationId,
+            school_id: selectedSchoolId,
+            class_id: selectedClassId,
+            capsule_id: capsules[capsules.length - 1].id,
+          },
+        })
+        console.log(res)
+      })
+
+      setShowDeleteConfirmation(false)
+      setShowCheckbox(false)
+    } catch (error) {
+      console.error('Error deleting file:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header title="メディア一覧" showBackButton />
@@ -121,6 +160,7 @@ const Media: React.FC = () => {
                   }
                   showCheckbox={showCheckbox}
                   isChecked={checkedStates ? checkedStates[photo.key] : false} // チェック状態を渡す
+                  deletable={photo.deletable}
                 />
               ))}
           </div>
@@ -167,8 +207,8 @@ const Media: React.FC = () => {
               </div>
               <div className="relative w-full h-full flex justify-between">
                 <Button
-                  // onClick={deleteSelectedPhotos}
-                  className="absolute w-[80px] h-[80px] -left-14 -bottom-14 bg-[#FF6262] border-[#FF6262] p-3 rounded-full"
+                  onClick={(e) => handleDelete(e)}
+                  className="absolute w-[80px] h-[80px] -left-14 -bottom-14 bg-error border-error p-3 rounded-full"
                 >
                   <Image
                     src="/images/trash.svg"
@@ -180,7 +220,7 @@ const Media: React.FC = () => {
                 </Button>
                 <Button
                   onClick={() => setShowDeleteConfirmation(false)}
-                  className="absolute w-[80px] h-[80px] -right-14 -bottom-14 bg-white border-[#FF6262] p-3 rounded-full"
+                  className="absolute w-[80px] h-[80px] -right-14 -bottom-14 bg-white border-2 border-error p-3 rounded-full"
                 >
                   <Image
                     src="/images/close-r.svg"

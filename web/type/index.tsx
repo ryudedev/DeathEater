@@ -52,8 +52,17 @@ export type Capsule = {
   updated_at?: Date
 }
 
-export type UsageProps = {
+export type UsagePercentageProps = {
   [category: string]: number
+}
+
+// [category: string]: numberを切り分けたい
+export type UsageProps = {
+  percentages: UsagePercentageProps
+  remainingStorage: {
+    remainingStoragePercentage: number
+    remainingStorageGB: number
+  }
 }
 
 export type UserClassesWithoutCapsules = Omit<UserClasses, 'class'> & {

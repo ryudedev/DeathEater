@@ -18,7 +18,8 @@ interface CapsuleState {
 export class CapsuleGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  @WebSocketServer() server: Server;
+  @WebSocketServer()
+  server: Server;
 
   private rooms: Map<string, Set<string>> = new Map();
   private userStreams: Map<string, MediaStream> = new Map();
@@ -138,6 +139,9 @@ export class CapsuleGateway
     const room = this.getOrCreateRoom(roomId);
     room.add(userId);
     this.broadcastRoomState(roomId);
+
+    // Notify other users about the new user
+    client.to(roomId).emit('newUserJoined', userId);
   }
 
   private leaveRoom(client: Socket, roomId: string, userId: string) {
@@ -190,5 +194,53 @@ export class CapsuleGateway
 
     console.log(`Broadcasting state to room ${roomId}:`, formattedStates);
     this.server.to(roomId).emit('stateUpdate', formattedStates);
+  }
+
+  @SubscribeMessage('offer')
+  handleOffer(
+    client: Socket,
+    data: {
+      targetUserId: string;
+      offer: RTCSessionDescriptionInit;
+      roomId: string;
+    },
+  ) {
+    const { offer, roomId } = data;
+    this.server.to(roomId).emit('offer', {
+      fromUserId: client.handshake.query.user,
+      offer,
+    });
+  }
+
+  @SubscribeMessage('answer')
+  handleAnswer(
+    client: Socket,
+    data: {
+      targetUserId: string;
+      answer: RTCSessionDescriptionInit;
+      roomId: string;
+    },
+  ) {
+    const { answer, roomId } = data;
+    this.server.to(roomId).emit('answer', {
+      fromUserId: client.handshake.query.user,
+      answer,
+    });
+  }
+
+  @SubscribeMessage('ice-candidate')
+  handleIceCandidate(
+    client: Socket,
+    data: {
+      targetUserId: string;
+      candidate: RTCIceCandidateInit;
+      roomId: string;
+    },
+  ) {
+    const { candidate, roomId } = data;
+    this.server.to(roomId).emit('ice-candidate', {
+      fromUserId: client.handshake.query.user,
+      candidate,
+    });
   }
 }

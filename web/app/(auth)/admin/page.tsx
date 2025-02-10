@@ -38,6 +38,7 @@ type CheckoutFormProps = {
   period: number
   isCapsuleNameError?: boolean
   capsuleNameRef?: React.RefObject<HTMLInputElement>
+  onClose: () => void
 }
 
 function CheckoutForm({
@@ -48,10 +49,10 @@ function CheckoutForm({
   period,
   isCapsuleNameError,
   capsuleNameRef,
+  onClose,
 }: CheckoutFormProps) {
   const { user, selectedClassId } = useDashboardStore()
   const stripe = useStripe()
-  const router = useRouter()
   const elements = useElements()
   const [createOrder] = useMutation(CREATE_ORDER)
   const [createCapsule] = useMutation(CREATE_CAPSULE)
@@ -105,12 +106,20 @@ function CheckoutForm({
             name: `${capsuleNameRef?.current?.value}`,
             class_id: selectedClassId,
             size: capsuleSize,
-            release_date: new Date(),
-            upload_deadline: new Date(),
+            // storage_years分の年数後の日付を取得
+            release_date: new Date(
+              new Date().setFullYear(new Date().getFullYear() + storageYears),
+            ),
+            // 16文字のランダムな文字列を生成
+            url: Math.random().toString(36).slice(-16),
+            // 今日から一ヶ月後の日付を取得
+            upload_deadline: new Date(
+              new Date().setMonth(new Date().getMonth() + 1),
+            ),
           },
         },
       })
-      router.refresh()
+      onClose()
       alert('購入が完了しました。')
     } catch (err) {
       console.error(err)
@@ -224,6 +233,8 @@ export default function ADMIN() {
     selectedClassId,
     capsulesByClass,
     setInit,
+    setMediaList,
+    setCapsuleId,
   } = useDashboardStore()
   const router = useRouter()
   // ロールの確認が終了するまでダッシュボードを表示しないためのstate
@@ -279,6 +290,18 @@ export default function ADMIN() {
           ? capsulesByClass[selectedClassId].length - 1
           : selectedCapsuleIndex - 1,
       )
+      console.log(
+        selectedOrganizationId,
+        selectedSchoolId,
+        selectedClassId,
+        String(selectedCapsuleIndex),
+      )
+      setMediaList(
+        selectedOrganizationId,
+        selectedSchoolId,
+        selectedClassId,
+        String(selectedCapsuleIndex),
+      )
     }
   }
 
@@ -299,6 +322,15 @@ export default function ADMIN() {
         selectedCapsuleIndex === capsulesByClass[selectedClassId].length - 1
           ? 0
           : selectedCapsuleIndex + 1,
+      )
+
+      setCapsuleId(capsulesByClass[selectedClassId][selectedCapsuleIndex].id!)
+
+      setMediaList(
+        selectedOrganizationId,
+        selectedSchoolId,
+        selectedClassId,
+        String(selectedCapsuleIndex),
       )
     }
   }
@@ -360,7 +392,7 @@ export default function ADMIN() {
             class_id: selectedClassId,
             uploaded_by: user?.id,
             deletable: isCheck,
-            capsule_id: capsules[capsules.length - 1].id,
+            capsule_id: capsules[selectedCapsuleIndex].id,
           },
         })
       }
@@ -488,6 +520,7 @@ export default function ADMIN() {
                   period={storageYears}
                   isCapsuleNameError={isCapsuleNameError}
                   capsuleNameRef={capsuleNameRef}
+                  onClose={() => setShowCreateCapsuleDialog(false)}
                 />
               </Elements>
             </div>
